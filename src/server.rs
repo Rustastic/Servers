@@ -7,12 +7,6 @@ use wg_2024::{
     packet::{FloodRequest, FloodResponse, Fragment, Nack, NackType, NodeType, Packet, PacketType},
 };
 
-pub enum ServerType{
-    Text,
-    Media,
-    Communication
-}
-
 
 pub trait Server{
     fn new(id: NodeId, packet_recv: Receiver<Packet>, packet_send: HashMap<NodeId, Sender<Packet>>) -> Self;
