@@ -8,7 +8,7 @@ use wg_2024::packet::{NodeType, Packet};
 use messages;
 use messages::high_level_messages::ServerType;
 use messages::high_level_messages::ServerType::{Text};
-use messages::server_commands::{CommunicationServerCommand, CommunicationServerEvent};
+use messages::server_commands::{ContentServerCommand, ContentServerEvent};
 use source_routing::Router;
 use crate::servers::packet_cache::PacketCache;
 
@@ -19,8 +19,8 @@ pub struct ContentServer {
     pub packet_cache: PacketCache,
     pub packet_recv: Receiver<Packet>,
     pub packet_send: HashMap<NodeId, Sender<Packet>>,
-    pub controller_send: Sender<CommunicationServerEvent>,
-    pub controller_recv: Receiver<CommunicationServerCommand>,
+    pub controller_send: Sender<ContentServerEvent>,
+    pub controller_recv: Receiver<ContentServerCommand>,
     pub server_type: ServerType, //text or media
     pub file_list: HashMap<String, String>, //file name and file path
 }
