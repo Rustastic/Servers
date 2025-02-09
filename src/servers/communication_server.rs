@@ -26,7 +26,7 @@ pub struct CommunicationServer {
 }
 
 impl CommunicationServer {
-    fn new(id: NodeId, packet_recv: Receiver<Packet>, packet_send: HashMap<NodeId, Sender<Packet>>, controller_send: Sender<CommunicationServerEvent>, controller_recv: Receiver<CommunicationServerCommand>) -> Self {
+    pub fn new(id: NodeId, packet_recv: Receiver<Packet>, packet_send: HashMap<NodeId, Sender<Packet>>, controller_send: Sender<CommunicationServerEvent>, controller_recv: Receiver<CommunicationServerCommand>) -> Self {
         Self {
             id,
             router: Router::new(id, NodeType::Server),
@@ -40,7 +40,7 @@ impl CommunicationServer {
             registered_clients: vec![],
         }
     }
-    fn run(&mut self) {
+    pub fn run(&mut self) {
         self.flood_network();
         loop {
             select_biased! {
