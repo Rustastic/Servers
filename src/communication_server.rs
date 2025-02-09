@@ -8,7 +8,7 @@ use crate::server::{Server};
 use messages;
 use messages::high_level_messages::{ServerMessage, ServerType};
 use messages::high_level_messages::ServerType::Chat;
-use messages::server_commands::CommunicationServerEvent;
+use messages::server_commands::{CommunicationServerCommand, CommunicationServerEvent};
 use source_routing::Router;
 use crate::packet_cache::PacketCache;
 
@@ -20,13 +20,13 @@ pub struct CommunicationServer {
     packet_recv: Receiver<Packet>,
     pub packet_send: HashMap<NodeId, Sender<Packet>>,
     pub controller_send: Sender<CommunicationServerEvent>,
-    controller_recv: Receiver<ServerMessage>,
+    controller_recv: Receiver<CommunicationServerCommand>,
     server_type: ServerType,
     registered_clients: Vec<NodeId>, //note id of the sender and the path to the receiver
 }
 
 impl Server for CommunicationServer {
-     fn new(id: NodeId, packet_recv: Receiver<Packet>, packet_send: HashMap<NodeId, Sender<Packet>>, controller_send: Sender<CommunicationServerEvent>, controller_recv: Receiver<ServerMessage>) -> Self {
+     fn new(id: NodeId, packet_recv: Receiver<Packet>, packet_send: HashMap<NodeId, Sender<Packet>>, controller_send: Sender<CommunicationServerEvent>, controller_recv: Receiver<CommunicationServerCommand>) -> Self {
         Self {
             id,
             router: Router::new(id, NodeType::Server),
