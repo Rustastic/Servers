@@ -1,23 +1,28 @@
+mod packet_cache;
+mod handle_command_packet;
+mod send_functions;
+
 use std::collections::HashMap;
+use std::thread;
 use assembler::HighLevelMessageFactory;
 use crossbeam_channel::{select_biased, Receiver, Sender};
 use wg_2024::network::{NodeId, SourceRoutingHeader};
 use wg_2024::packet::{Fragment, NodeType, Packet};
 
-use crate::server::{Server};
 use messages;
 use messages::high_level_messages::{ServerMessage, ServerType};
 use messages::high_level_messages::ServerType::Chat;
 use messages::server_commands::{CommunicationServerCommand, CommunicationServerEvent};
 use source_routing::Router;
-use crate::packet_cache::PacketCache;
+use crate::communication_server::packet_cache::PacketCache;
+use crate::server::Server;
 
 pub struct CommunicationServer {
     pub id: NodeId,
-    router: Router,
-    message_factory: HighLevelMessageFactory,
-    packet_cache: PacketCache, //cache for the packets
-    packet_recv: Receiver<Packet>,
+    pub router: Router,
+    pub message_factory: HighLevelMessageFactory,
+    pub packet_cache: PacketCache, //cache for the packets
+    pub packet_recv: Receiver<Packet>,
     pub packet_send: HashMap<NodeId, Sender<Packet>>,
     pub controller_send: Sender<CommunicationServerEvent>,
     controller_recv: Receiver<CommunicationServerCommand>,
@@ -48,9 +53,9 @@ impl Server for CommunicationServer {
                         self.handle_packet(packet);
                     }
                 },
-                recv(self.controller_recv) -> message => {
-                    if let Ok(message) = message {
-                        self.handle_message(message);
+                recv(self.controller_recv) -> command => {
+                    if let Ok(command) = command {
+                        self.handle_command(command);
                     }
                 }
             }
@@ -66,19 +71,8 @@ impl Server for CommunicationServer {
             let req = self.router.get_flood_request();
             self.send_packet(req, Some(sender));
         }
+        thread::sleep(std::time::Duration::from_millis(10));
     }
 }
 
-impl CommunicationServer{
-    fn handle_packet(&mut self, packet: Packet) {
-        //todo!()
-        //need to assemble the package
-        //one it's full assamble the message I'm gonna see what to do with it
-    }
-
-    fn handle_message(&mut self, message: ServerMessage){
-        //todo!()
-    }
-
-}
 

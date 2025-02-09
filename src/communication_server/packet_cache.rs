@@ -39,4 +39,20 @@ impl PacketCache {
             .remove(&key)
             .map(|(p, _)| p)
     }
+    pub fn insert_value(&self, value: &Value) {
+        let session_id = value.0.session_id;
+        if let wg_2024::packet::PacketType::MsgFragment(frg) = &value.0.pack_type {
+            let fragment_id = frg.fragment_index;
+            self.cache
+                .borrow_mut()
+                .insert((session_id, fragment_id), value.clone());
+        }
+    }
+
+    pub fn get_value(&self, key: Key) -> Option<Value> {
+        let mut cache = self.cache.try_borrow_mut().ok()?;
+        let value = cache.get_mut(&key)?;
+        value.1 += 1;
+        Some(value.clone())
+    }
 }

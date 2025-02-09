@@ -1,5 +1,5 @@
 [package]
-name = "ComunicationServer"
+name = "communication_server"
 version = "0.1.0"
 edition = "2021"
 
@@ -13,3 +13,4 @@ toml = "0.8.19"
 rand = "0.8.0"
 colored = "3"
 log = "0.4"
+

@@ -5,7 +5,6 @@ use messages::server_commands::CommunicationServerEvent;
 use wg_2024::network::NodeId;
 use wg_2024::packet::Packet;
 use crate::communication_server::CommunicationServer;
-use crate::server::Server;
 
 impl CommunicationServer {
     pub fn send_packet(&self, msg: Packet, sender: Option<&Sender<Packet>>) {
