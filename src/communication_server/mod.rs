@@ -46,6 +46,7 @@ impl Server for CommunicationServer {
         }
     }
     fn run(&mut self) {
+        self.flood_network();
         loop {
             select_biased! {
                 recv(self.packet_recv) -> packet => {

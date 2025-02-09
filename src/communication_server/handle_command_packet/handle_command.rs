@@ -11,12 +11,6 @@ impl CommunicationServer {
     pub fn handle_command(&mut self, command: CommunicationServerCommand) {
         match command {
             CommunicationServerCommand::InitFlooding => self.flood_network(),
-            CommunicationServerCommand::StartServer => {
-                info!("{} [ CommunicationServer {} ]: Server started successfully.", "✔".green(), self.id);
-            }
-            CommunicationServerCommand::StopServer => {
-                info!("{} [ CommunicationServer {} ]: Server stopped successfully.", "✔".green(), self.id);
-            }
             CommunicationServerCommand::RemoveSender(id) => {
                 let _ = self
                     .packet_send
