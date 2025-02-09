@@ -29,8 +29,8 @@ impl ContentServer {
     pub fn new(id: NodeId,
            packet_recv: Receiver<Packet>,
            packet_send: HashMap<NodeId, Sender<Packet>>,
-           controller_send: Sender<CommunicationServerEvent>,
-           controller_recv: Receiver<CommunicationServerCommand>,
+           controller_send: Sender<ContentServerEvent>,
+           controller_recv: Receiver<ContentServerCommand>,
            server_type: ServerType) -> Self {
         let mut hm = HashMap::new();
         match server_type {
