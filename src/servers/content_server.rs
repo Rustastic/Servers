@@ -26,7 +26,7 @@ pub struct ContentServer {
 }
 
 impl ContentServer {
-    fn new(id: NodeId,
+    pub fn new(id: NodeId,
            packet_recv: Receiver<Packet>,
            packet_send: HashMap<NodeId, Sender<Packet>>,
            controller_send: Sender<CommunicationServerEvent>,
@@ -66,7 +66,7 @@ impl ContentServer {
             file_list: hm,
         }
     }
-    fn run(&mut self) {
+    pub fn run(&mut self) {
         self.flood_network();
         loop {
             select_biased! {
