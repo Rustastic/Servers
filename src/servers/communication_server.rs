@@ -1,21 +1,16 @@
-mod packet_cache;
-mod handle_command_packet;
-mod send_functions;
-
 use std::collections::HashMap;
 use std::thread;
 use assembler::HighLevelMessageFactory;
 use crossbeam_channel::{select_biased, Receiver, Sender};
-use wg_2024::network::{NodeId};
-use wg_2024::packet::{ NodeType, Packet};
+use wg_2024::network::NodeId;
+use wg_2024::packet::{NodeType, Packet};
 
 use messages;
-use messages::high_level_messages::{ ServerType};
+use messages::high_level_messages::ServerType;
 use messages::high_level_messages::ServerType::Chat;
 use messages::server_commands::{CommunicationServerCommand, CommunicationServerEvent};
 use source_routing::Router;
-use crate::communication_server::packet_cache::PacketCache;
-use crate::server::Server;
+use crate::servers::packet_cache::PacketCache;
 
 pub struct CommunicationServer {
     pub id: NodeId,
@@ -25,13 +20,13 @@ pub struct CommunicationServer {
     pub packet_recv: Receiver<Packet>,
     pub packet_send: HashMap<NodeId, Sender<Packet>>,
     pub controller_send: Sender<CommunicationServerEvent>,
-    controller_recv: Receiver<CommunicationServerCommand>,
-    server_type: ServerType,
-    registered_clients: Vec<NodeId>, //note id of the sender and the path to the receiver
+    pub controller_recv: Receiver<CommunicationServerCommand>,
+    pub server_type: ServerType,
+    pub registered_clients: Vec<NodeId>, //note id of the sender and the path to the receiver
 }
 
-impl Server for CommunicationServer {
-     fn new(id: NodeId, packet_recv: Receiver<Packet>, packet_send: HashMap<NodeId, Sender<Packet>>, controller_send: Sender<CommunicationServerEvent>, controller_recv: Receiver<CommunicationServerCommand>) -> Self {
+impl CommunicationServer {
+    fn new(id: NodeId, packet_recv: Receiver<Packet>, packet_send: HashMap<NodeId, Sender<Packet>>, controller_send: Sender<CommunicationServerEvent>, controller_recv: Receiver<CommunicationServerCommand>) -> Self {
         Self {
             id,
             router: Router::new(id, NodeType::Server),
@@ -63,11 +58,11 @@ impl Server for CommunicationServer {
         }
     }
 
-    fn reinit_network(&mut self) {
+    pub fn reinit_network(&mut self) {
         self.router.clear_routing_table();
         self.flood_network();
     }
-    fn flood_network(&self){
+    pub fn flood_network(&self){
         for sender in self.packet_send.values(){
             let req = self.router.get_flood_request();
             self.send_packet(req, Some(sender));
