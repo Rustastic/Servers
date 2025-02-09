@@ -1,6 +1,6 @@
 use colored::Colorize;
 use log::error;
-use messages::server_commands::{CommunicationServerEvent};
+use messages::server_commands::{CommunicationServerEvent, ContentServerEvent};
 use wg_2024::network::{NodeId, SourceRoutingHeader};
 use wg_2024::packet::{Ack, FloodRequest, FloodResponse, Fragment, Nack, NackType, NodeType, Packet};
 use crate::servers::communication_server::CommunicationServer;
@@ -214,7 +214,7 @@ impl ContentServer {
             },
             NackType::DestinationIsDrone => {
                 error!("{} [ContentServer {}]: Destination is a drone", "✗".red(), self.id);
-                self.send_controller(CommunicationServerEvent::DestinationIsDrone(self.id));
+                self.send_controller(ContentServerEvent::DestinationIsDrone(self.id));
             },
             NackType::UnexpectedRecipient(id) => {
                 error!("{} [ContentServer {}]: Packet dropped or unexpected recipient", "✗".red(), self.id);
@@ -241,7 +241,7 @@ impl ContentServer {
                 packet.routing_header = new_header;
                 self.flood_network();
             } else {
-                self.send_controller(CommunicationServerEvent::UnreachableClient(destination));
+                self.send_controller(ContentServerEvent::UnreachableClient(destination));
             }
         }
     }
@@ -257,7 +257,7 @@ impl ContentServer {
                     return;
                 };
                 let Ok(new_header) = self.router.get_source_routing_header(destination) else {
-                    self.send_controller(CommunicationServerEvent::UnreachableClient(destination));
+                    self.send_controller(ContentServerEvent::UnreachableClient(destination));
                     return;
                 };
                 let new_packet = Packet {
@@ -268,7 +268,7 @@ impl ContentServer {
             }
             self.send_packet(packet, None);
         } else {
-            self.send_controller(CommunicationServerEvent::ErrorPacketCache(session_id, fragment_index));
+            self.send_controller(ContentServerEvent::ErrorPacketCache(session_id, fragment_index));
         }
     }
 

@@ -1,7 +1,7 @@
 use colored::Colorize;
 use crossbeam_channel::Sender;
 use log::{error, info};
-use messages::server_commands::CommunicationServerEvent;
+use messages::server_commands::{CommunicationServerEvent, ContentServerEvent};
 use wg_2024::network::NodeId;
 use wg_2024::packet::Packet;
 use crate::servers::communication_server::CommunicationServer;
@@ -124,7 +124,7 @@ impl ContentServer {
         sender
             .send(msg)
             .inspect_err(|e| {
-                self.send_controller(CommunicationServerEvent::SendError(e.clone()));
+                self.send_controller(ContentServerEvent::SendError(e.clone()));
                 error!(
                     "{} [CommunicationServer {}] error in sending packet (session: {}, fragment: {})",
                     "✗".red(),
@@ -154,11 +154,11 @@ impl ContentServer {
                 sender
                     .send(msg)
                     .inspect_err(|e| {
-                        self.send_controller(CommunicationServerEvent::ControllerShortcut(e.0.clone()));
+                        self.send_controller(ContentServerEvent::ControllerShortcut(e.0.clone()));
                     })
                     .ok();
             }
-            None => self.send_controller(CommunicationServerEvent::ControllerShortcut(msg)),
+            None => self.send_controller(ContentServerEvent::ControllerShortcut(msg)),
         }
     }
     fn get_sender(&self, packet: &Packet) -> Option<Sender<Packet>> {
@@ -169,7 +169,7 @@ impl ContentServer {
         )
     }
 
-    pub fn send_controller(&self, msg: CommunicationServerEvent) {
+    pub fn send_controller(&self, msg: ContentServerEvent) {
         self.controller_send
             .send(msg)
             .inspect_err(|e| {
