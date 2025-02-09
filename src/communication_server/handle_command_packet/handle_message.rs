@@ -1,10 +1,9 @@
-use std::fs::File;
 use colored::Colorize;
 use log::{error, info};
 use messages::high_level_messages::{ClientMessage, Message, ServerMessage};
 use messages::high_level_messages::MessageContent::{FromClient, FromServer};
 use messages::high_level_messages::ServerMessage::{ServerType};
-use wg_2024::network::{NodeId, SourceRoutingHeader};
+use wg_2024::network::{NodeId};
 use crate::communication_server::CommunicationServer;
 
 impl CommunicationServer {
@@ -27,7 +26,7 @@ impl CommunicationServer {
                     self.registered_clients.push(message.source_id);
                     info!("{}, CommunicationServer {}, Client {} registered to chat", "✔".green(), self.id, message.source_id);
                 }else{
-                    error!("{} [ CommunicationServer {} ]: Client {} already registered to chat", "✗".red(), self.id);
+                    error!("{} [ CommunicationServer {} ]: Client {} already registered to chat", "✗".red(), self.id, message.source_id);
                 }
             }
 
@@ -37,7 +36,7 @@ impl CommunicationServer {
                     self.registered_clients.remove(index);
                     info!("{}, CommunicationServer {}, Client {} logged out", "✔".green(), self.id, message.source_id);
                 }else{
-                    error!("{} [ CommunicationServer {} ]: Client {} not registered to chat", "✗".red(), self.id);
+                    error!("{} [ CommunicationServer {} ]: Client {} not registered to chat", "✗".red(), self.id, message.source_id);
                 }
             }
             ClientMessage::GetClientList => {
@@ -54,7 +53,7 @@ impl CommunicationServer {
                     };
                     self.send_message_to_client(server_message, recipient_id);
                 }else{
-                    error!("{} [ CommunicationServer {} ]: Client {} is not registered to chat", "✗".red(), self.id);
+                    error!("{} [ CommunicationServer {} ]: Client {} is not registered to chat", "✗".red(), self.id, recipient_id);
                 }
             }
             ClientMessage::GetFilesList | ClientMessage::GetFile(_) | ClientMessage::GetMedia(_) => {
@@ -66,10 +65,10 @@ impl CommunicationServer {
     fn send_message_to_client(&mut self, server_message: ServerMessage, destination_id: NodeId) {
         let Ok(header) = self.router.get_source_routing_header(destination_id) else {
             error!(
-                "{} [ Communication {} ]: Cannot send message, destination {message.destination_id} is unreachable",
+                "{} [ Communication {} ]: Cannot send message, destination {} is unreachable",
                 "✗".red(),
                 self.id,
-                    );
+                   destination_id );
             return;
         };
         for fragment_packet in self.message_factory.get_message_from_message_content(

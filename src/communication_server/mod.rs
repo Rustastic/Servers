@@ -6,11 +6,11 @@ use std::collections::HashMap;
 use std::thread;
 use assembler::HighLevelMessageFactory;
 use crossbeam_channel::{select_biased, Receiver, Sender};
-use wg_2024::network::{NodeId, SourceRoutingHeader};
-use wg_2024::packet::{Fragment, NodeType, Packet};
+use wg_2024::network::{NodeId};
+use wg_2024::packet::{ NodeType, Packet};
 
 use messages;
-use messages::high_level_messages::{ServerMessage, ServerType};
+use messages::high_level_messages::{ ServerType};
 use messages::high_level_messages::ServerType::Chat;
 use messages::server_commands::{CommunicationServerCommand, CommunicationServerEvent};
 use source_routing::Router;
