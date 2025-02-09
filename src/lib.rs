@@ -1,5 +1,5 @@
-mod communication_server;
-mod server;
+pub mod communication_server;
+pub mod server;
 
 pub use communication_server::*;
 pub use server::*;
