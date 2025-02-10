@@ -10,7 +10,7 @@ use messages::high_level_messages::ServerType;
 use messages::high_level_messages::ServerType::Chat;
 use messages::server_commands::{CommunicationServerCommand, CommunicationServerEvent};
 use source_routing::Router;
-use crate::servers::packet_cache::PacketCache;
+use packet_cache::PacketCache;
 
 pub struct CommunicationServer {
     pub id: NodeId,
@@ -26,6 +26,7 @@ pub struct CommunicationServer {
 }
 
 impl CommunicationServer {
+    #[must_use]
     pub fn new(id: NodeId, packet_recv: Receiver<Packet>, packet_send: HashMap<NodeId, Sender<Packet>>, controller_send: Sender<CommunicationServerEvent>, controller_recv: Receiver<CommunicationServerCommand>) -> Self {
         Self {
             id,
@@ -62,8 +63,8 @@ impl CommunicationServer {
         self.router.clear_routing_table();
         self.flood_network();
     }
-    pub fn flood_network(&self){
-        for sender in self.packet_send.values(){
+    pub fn flood_network(&self) {
+        for sender in self.packet_send.values() {
             let req = self.router.get_flood_request();
             self.send_packet(req, Some(sender));
         }

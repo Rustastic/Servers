@@ -61,6 +61,7 @@ impl CommunicationServer {
     }
 
     fn send_or_shortcut(&self, msg: Packet) {
+        info!("{} [CommunicationServer {}] sending packet {:?}", "✓".green(), self.id, msg);
         match self.get_sender(&msg) {
             Some(sender) => {
                 sender
@@ -108,7 +109,7 @@ impl ContentServer {
             wg_2024::packet::PacketType::MsgFragment(_) => {
                 let Some(dest) = msg.routing_header.next_hop() else {
                     error!(
-                        "{} [MediaClienet {}] error taking next_hop",
+                        "{} [ContentServer {}] error taking next_hop",
                         "✗".red(),
                         self.id
                     );
@@ -120,13 +121,13 @@ impl ContentServer {
     }
 
     pub fn send_to_sender(&self, msg: Packet, sender: &Sender<Packet>) {
-        info!("{} [CommunicationServer {}] sending packet", "✓".green(), self.id);
+        info!("{} [ContentServer {}] sending packet", "✓".green(), self.id);
         sender
             .send(msg)
             .inspect_err(|e| {
                 self.send_controller(ContentServerEvent::SendError(e.clone()));
                 error!(
-                    "{} [CommunicationServer {}] error in sending packet (session: {}, fragment: {})",
+                    "{} [ContentServer {}] error in sending packet (session: {}, fragment: {})",
                     "✗".red(),
                     self.id,
                     e.0.session_id,
@@ -139,7 +140,7 @@ impl ContentServer {
     fn send_to_neighbour_id(&self, msg: Packet, neighbour_id: NodeId) {
         let Some(sender) = self.packet_send.get(&neighbour_id) else {
             error!(
-                "{} [ CommunicationServer {} ]: Cannot send message, destination {neighbour_id} is unreachable",
+                "{} [ContentServer {} ]: Cannot send message, destination {neighbour_id} is unreachable",
                 "✗".red(),
                 self.id,
             );
@@ -174,7 +175,7 @@ impl ContentServer {
             .send(msg)
             .inspect_err(|e| {
                 error!(
-                    "{} [CommunicationServer {}] error in sending to sim-controller. Message: [{:?}]",
+                    "{} [ContentServer {}] error in sending to sim-controller. Message: [{:?}]",
                     "✗".red(),
                     self.id,
                     e.0

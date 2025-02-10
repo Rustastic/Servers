@@ -6,7 +6,7 @@ use wg_2024::packet::{Ack, FloodRequest, FloodResponse, Fragment, Nack, NackType
 use crate::servers::communication_server::CommunicationServer;
 use crate::servers::content_server::ContentServer;
 
-/// Implementation for the CommunicationServer, handling network packet operations.
+/// Implementation for the `CommunicationServer`, handling network packet operations.
 impl CommunicationServer {
     pub fn handle_packet(&mut self, packet: Packet) {
         match packet.pack_type {
@@ -17,7 +17,7 @@ impl CommunicationServer {
                 self.packet_cache.take_packet((packet.session_id, ack.fragment_index));
             }
             wg_2024::packet::PacketType::Nack(nack) => {
-                self.handle_nack(nack, packet.session_id);
+                self.handle_nack(&nack, packet.session_id);
             }
             wg_2024::packet::PacketType::FloodRequest(request) => {
                 let response = self.get_flood_response(request, packet.session_id);
@@ -49,7 +49,7 @@ impl CommunicationServer {
         }
     }
 
-    pub fn handle_nack(&mut self, nack: Nack, session_id: u64) {
+    pub fn handle_nack(&mut self, nack: &Nack, session_id: u64) {
         match nack.nack_type {
             NackType::ErrorInRouting(crashed_id) => {
                 error!("{} [CommunicationServer {}]: error_in_routing({})", "✗".red(), self.id, crashed_id);
@@ -137,16 +137,17 @@ impl CommunicationServer {
     /// Generates a response to a flood request.
     fn get_flood_response(&self, flood_request: FloodRequest, session_id: u64) -> Packet {
         let mut path_trace = flood_request.path_trace;
-        path_trace.push((self.id, NodeType::Client));
+        path_trace.push((self.id, NodeType::Server));
         let mut hops = path_trace.iter().map(|(id, _)| *id).collect::<Vec<u8>>();
         hops.reverse();
         hops.push(flood_request.initiator_id);
+
         let flood_response = FloodResponse {
             flood_id: flood_request.flood_id,
             path_trace,
         };
         Packet {
-            routing_header: SourceRoutingHeader::with_first_hop(hops),
+            routing_header: SourceRoutingHeader::initialize(hops),
             session_id,
             pack_type: wg_2024::packet::PacketType::FloodResponse(flood_response),
         }
@@ -173,7 +174,7 @@ impl ContentServer {
                 self.packet_cache.take_packet((packet.session_id, ack.fragment_index));
             }
             wg_2024::packet::PacketType::Nack(nack) => {
-                self.handle_nack(nack, packet.session_id);
+                self.handle_nack(&nack, packet.session_id);
             }
             wg_2024::packet::PacketType::FloodRequest(request) => {
                 let response = self.get_flood_response(request, packet.session_id);
@@ -205,7 +206,7 @@ impl ContentServer {
         }
     }
 
-    pub fn handle_nack(&mut self, nack: Nack, session_id: u64) {
+    pub fn handle_nack(&mut self, nack: &Nack, session_id: u64) {
         match nack.nack_type {
             NackType::ErrorInRouting(crashed_id) => {
                 error!("{} [ContentServer {}]: error_in_routing({})", "✗".red(), self.id, crashed_id);
@@ -293,7 +294,7 @@ impl ContentServer {
     /// Generates a response to a flood request.
     fn get_flood_response(&self, flood_request: FloodRequest, session_id: u64) -> Packet {
         let mut path_trace = flood_request.path_trace;
-        path_trace.push((self.id, NodeType::Client));
+        path_trace.push((self.id, NodeType::Server));
         let mut hops = path_trace.iter().map(|(id, _)| *id).collect::<Vec<u8>>();
         hops.reverse();
         hops.push(flood_request.initiator_id);
@@ -302,7 +303,7 @@ impl ContentServer {
             path_trace,
         };
         Packet {
-            routing_header: SourceRoutingHeader::with_first_hop(hops),
+            routing_header: SourceRoutingHeader::initialize(hops),
             session_id,
             pack_type: wg_2024::packet::PacketType::FloodResponse(flood_response),
         }
