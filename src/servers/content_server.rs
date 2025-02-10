@@ -38,11 +38,11 @@ impl ContentServer {
             //inizialize the hashmap
             Text => {
                 let prefix = "text_files/".to_string();
-                hm.insert("file1".to_string(), prefix.clone() + "file1.txt");
-                hm.insert("file2".to_string(), prefix.clone() + "file2.txt");
-                hm.insert("file3".to_string(), prefix.clone() + "file3.txt");
-                hm.insert("file4".to_string(), prefix.clone() + "file4.txt");
-                hm.insert("file5".to_string(), prefix.clone() + "file5.txt");
+                hm.insert("file1".to_string(), prefix.clone() + "file1.html");
+                hm.insert("file2".to_string(), prefix.clone() + "file2.html");
+                hm.insert("file3".to_string(), prefix.clone() + "file3.html");
+                hm.insert("file4".to_string(), prefix.clone() + "file4.html");
+                hm.insert("file5".to_string(), prefix.clone() + "file5.html");
             }
             ServerType::Media => {
                 let prefix = "media_files/".to_string();
