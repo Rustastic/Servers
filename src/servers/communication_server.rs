@@ -26,6 +26,7 @@ pub struct CommunicationServer {
 }
 
 impl CommunicationServer {
+    #[must_use]
     pub fn new(id: NodeId, packet_recv: Receiver<Packet>, packet_send: HashMap<NodeId, Sender<Packet>>, controller_send: Sender<CommunicationServerEvent>, controller_recv: Receiver<CommunicationServerCommand>) -> Self {
         Self {
             id,
@@ -62,8 +63,8 @@ impl CommunicationServer {
         self.router.clear_routing_table();
         self.flood_network();
     }
-    pub fn flood_network(&self){
-        for sender in self.packet_send.values(){
+    pub fn flood_network(&self) {
+        for sender in self.packet_send.values() {
             let req = self.router.get_flood_request();
             self.send_packet(req, Some(sender));
         }
