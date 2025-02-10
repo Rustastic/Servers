@@ -58,7 +58,7 @@ impl CommunicationServer {
                     };
                     self.send_message_to_client(&server_message, recipient_id);
                 } else {
-                    self.send_message_to_client(&ServerMessage::UnreachableClient(&message.source_id), recipient_id);
+                    self.send_message_to_client(&ServerMessage::UnreachableClient(message.source_id), recipient_id);
                     error!("{} [ CommunicationServer {} ]: Client {} is not registered to chat", "✗".red(), self.id, recipient_id);
                 }
             }
