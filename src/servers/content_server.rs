@@ -37,7 +37,7 @@ impl ContentServer {
         match server_type {
             //inizialize the hashmap
             Text => {
-                let prefix = "text_files/".to_string();
+                let prefix = r"text_files/".to_string();
                 hm.insert("file1".to_string(), prefix.clone() + "file1.html");
                 hm.insert("file2".to_string(), prefix.clone() + "file2.html");
                 hm.insert("file3".to_string(), prefix.clone() + "file3.html");
@@ -45,7 +45,7 @@ impl ContentServer {
                 hm.insert("file5".to_string(), prefix.clone() + "file5.html");
             }
             ServerType::Media => {
-                let prefix = "media_files/".to_string();
+                let prefix = r"media_files/".to_string();
                 hm.insert("media1".to_string(), prefix.clone() + "media1.jpg");
                 hm.insert("media2".to_string(), prefix.clone() + "media2.jpg");
                 hm.insert("media3".to_string(), prefix.clone() + "media3.jpg");

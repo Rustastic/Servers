@@ -14,4 +14,5 @@ toml = "0.8.19"
 rand = "0.8.0"
 colored = "3"
 log = "0.4"
+image = "0.25.5"
 

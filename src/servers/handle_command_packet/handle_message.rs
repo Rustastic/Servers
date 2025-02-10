@@ -1,4 +1,5 @@
 use colored::Colorize;
+use image::ImageReader;
 use log::{error, info};
 use messages::high_level_messages::{ClientMessage, Message, ServerMessage};
 use messages::high_level_messages::MessageContent::{FromClient, FromServer};
@@ -104,8 +105,38 @@ impl ContentServer {
                 let files_list = self.file_list.keys().cloned().collect();
                 self.send_message_to_client(&ServerMessage::FilesList(files_list), message.source_id);
             }
+            ClientMessage::GetMedia(file_name) => {
 
-            ClientMessage::GetFile(file_name) | ClientMessage::GetMedia(file_name) => {
+                if let Some(file_path) = self.file_list.get(&file_name) {
+                    match ImageReader::open(file_path) {
+                        Ok(file_content) => {
+                            let server_message = ServerMessage::Media {
+                                0: file_name.clone(),
+                                1: file_content.decode().unwrap().into_bytes(),
+                            };
+                            self.send_message_to_client(&server_message, message.source_id);
+                        }
+                        Err(e) => {
+                            error!(
+                    "{} [ ContentServer {} ]: Failed to read file {}: {}",
+                    "✗".red(),
+                    self.id,
+                    file_name,
+                    e
+                );
+                        }
+                    }
+                } else {
+                    error!(
+            "{} [ ContentServer {} ]: File {} not found",
+            "✗".red(),
+            self.id,
+            file_name
+        );
+                }
+            }
+
+            ClientMessage::GetFile(file_name) => {
                 if let Some(file_path) = self.file_list.get(&file_name) {
                     match std::fs::read_to_string(file_path) {
                         Ok(file_content) => {
