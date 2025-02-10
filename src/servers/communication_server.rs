@@ -10,7 +10,7 @@ use messages::high_level_messages::ServerType;
 use messages::high_level_messages::ServerType::Chat;
 use messages::server_commands::{CommunicationServerCommand, CommunicationServerEvent};
 use source_routing::Router;
-use crate::servers::packet_cache::PacketCache;
+use packet_cache::PacketCache;
 
 pub struct CommunicationServer {
     pub id: NodeId,

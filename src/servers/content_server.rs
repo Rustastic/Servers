@@ -10,7 +10,7 @@ use messages::high_level_messages::ServerType;
 use messages::high_level_messages::ServerType::{Text};
 use messages::server_commands::{ContentServerCommand, ContentServerEvent};
 use source_routing::Router;
-use crate::servers::packet_cache::PacketCache;
+use packet_cache::PacketCache;
 
 pub struct ContentServer {
     pub id: NodeId,
