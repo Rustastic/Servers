@@ -9,6 +9,7 @@ use crate::servers::content_server::ContentServer;
 
 impl CommunicationServer {
     pub fn handle_message(&mut self, message: Message) {
+        info!("{}, CommunicationServer {}, Recived a packet {:?}", "✔".green(), self.id, message);
         let FromClient(content) = message.content else {
             error!("{} [ CommunicationServer {} ]: Received message is not from a client.", "✗".red(), self.id);
             return;
