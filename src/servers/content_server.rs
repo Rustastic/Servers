@@ -39,20 +39,18 @@ impl ContentServer {
         match server_type {
             //inizialize the hashmap
             Text => {
-                let prefix = r"text_files/".to_string();
-                hm.insert("file1".to_string(), prefix.clone() + "file1.html");
-                hm.insert("file2".to_string(), prefix.clone() + "file2.html");
-                hm.insert("file3".to_string(), prefix.clone() + "file3.html");
-                hm.insert("file4".to_string(), prefix.clone() + "file4.html");
-                hm.insert("file5".to_string(), prefix.clone() + "file5.html");
+                hm.insert("file1".to_string(), "file1.html".to_string());
+                hm.insert("file2".to_string(), "file2.html".to_string());
+                hm.insert("file3".to_string(), "file3.html".to_string());
+                hm.insert("file4".to_string(), "file4.html".to_string());
+                hm.insert("file5".to_string(), "file5.html".to_string());
             }
             ServerType::Media => {
-                let prefix = r"media_files/".to_string();
-                hm.insert("media1".to_string(), prefix.clone() + "media1.jpg");
-                hm.insert("media2".to_string(), prefix.clone() + "media2.jpg");
-                hm.insert("media3".to_string(), prefix.clone() + "media3.jpg");
-                hm.insert("media4".to_string(), prefix.clone() + "media4.jpg");
-                hm.insert("media5".to_string(), prefix.clone() + "media5.jpg");
+                hm.insert("media1".to_string(), "media1.jpg".to_string());
+                hm.insert("media2".to_string(), "media2.jpg".to_string());
+                hm.insert("media3".to_string(), "media3.jpg".to_string());
+                hm.insert("media4".to_string(), "media4.jpg".to_string());
+                hm.insert("media5".to_string(), "media5.jpg".to_string());
             }
             ServerType::Chat => {}
         }

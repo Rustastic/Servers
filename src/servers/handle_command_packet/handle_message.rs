@@ -183,38 +183,54 @@ impl ContentServer {
                 );
             }
             ClientMessage::GetMedia(file_name) => {
-                if let Some(file_path) = self.file_list.get(&file_name) {
-                    match ImageReader::open(file_path) {
-                        Ok(file_content) => match file_content.decode() {
-                            Ok(file_media_content) => {
-                                let mut buf = Vec::new();
-                                match file_media_content
-                                    .write_to(&mut Cursor::new(&mut buf), image::ImageFormat::Jpeg)
-                                {
-                                    Ok(..) => {
-                                        let base_64 = general_purpose::STANDARD.encode(&buf);
-                                        let server_message =
-                                            ServerMessage::Media(file_name.clone(), base_64);
-                                        self.send_message_to_client(
-                                            &server_message,
-                                            message.source_id,
-                                        );
-                                    }
-                                    Err(e) => {
-                                        error!(
+                if let Some(file_path_t) = self.file_list.get(&file_name) {
+                    match std::env::current_dir() {
+                        Ok(dir) => {
+                            let file_path = dir
+                                .join("src")
+                                .join("servers")
+                                .join("media_files")
+                                .join(file_path_t);
+                            match ImageReader::open(file_path) {
+                                Ok(file_content) => match file_content.decode() {
+                                    Ok(file_media_content) => {
+                                        let mut buf = Vec::new();
+                                        match file_media_content.write_to(
+                                            &mut Cursor::new(&mut buf),
+                                            image::ImageFormat::Jpeg,
+                                        ) {
+                                            Ok(..) => {
+                                                let base_64 =
+                                                    general_purpose::STANDARD.encode(&buf);
+                                                let server_message = ServerMessage::Media(
+                                                    file_name.clone(),
+                                                    base_64,
+                                                );
+                                                self.send_message_to_client(
+                                                    &server_message,
+                                                    message.source_id,
+                                                );
+                                            }
+                                            Err(e) => {
+                                                error!(
                                             "{} [ ContentServer {} ]: Failed to read file {}: {}",
                                             "✗".red(),
                                             self.id,
                                             file_name,
                                             e
                                         );
+                                            }
+                                        }
                                     }
+                                    Err(_) => {
+                                        self.print_error(&file_name);
+                                    }
+                                },
+                                Err(_e) => {
+                                    self.print_error(&file_name);
                                 }
                             }
-                            Err(_) => {
-                                self.print_error(&file_name);
-                            }
-                        },
+                        }
                         Err(_e) => {
                             self.print_error(&file_name);
                         }
@@ -224,20 +240,30 @@ impl ContentServer {
                 }
             }
             ClientMessage::GetFile(file_name) => {
-                if let Some(file_path) = self.file_list.get(&file_name) {
-                    match std::fs::read_to_string(file_path) {
-                        Ok(file_content) => {
-                            let file_size = file_content.len();
-                            let server_message = ServerMessage::File {
-                                file_id: file_name.clone(),
-                                size: file_size,
-                                content: file_content,
-                            };
-                            self.send_message_to_client(&server_message, message.source_id);
+                if let Some(file_path_t) = self.file_list.get(&file_name) {
+                    match std::env::current_dir() {
+                        Ok(dir) => {
+                            let file_path = dir
+                                .join("src")
+                                .join("servers")
+                                .join("text_files")
+                                .join(file_path_t);
+                            match std::fs::read_to_string(file_path) {
+                                Ok(file_content) => {
+                                    let file_size = file_content.len();
+                                    let server_message = ServerMessage::File {
+                                        file_id: file_name.clone(),
+                                        size: file_size,
+                                        content: file_content,
+                                    };
+                                    self.send_message_to_client(&server_message, message.source_id);
+                                }
+                                Err(_e) => {
+                                    self.print_error(&file_name);
+                                }
+                            }
                         }
-                        Err(_e) => {
-                            self.print_error(&file_name);
-                        }
+                        Err(_e) => {}
                     }
                 } else {
                     self.print_error(&file_name);
