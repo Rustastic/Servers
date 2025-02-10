@@ -12,6 +12,7 @@ impl CommunicationServer {
     pub fn handle_command(&mut self, command: CommunicationServerCommand) {
         match command {
             CommunicationServerCommand::InitFlooding => self.flood_network(),
+            CommunicationServerCommand::LogNetwork => self.router.log_network(),
             CommunicationServerCommand::RemoveSender(id) => {
                 let _ = self
                     .packet_send

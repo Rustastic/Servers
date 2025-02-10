@@ -57,6 +57,7 @@ impl CommunicationServer {
                     error!("{} [ CommunicationServer {} ]: Client {} is not registered to chat", "✗".red(), self.id, recipient_id);
                 }
             }
+
             ClientMessage::GetFilesList | ClientMessage::GetFile(_) | ClientMessage::GetMedia(_) => {
                 error!("{} [ CommunicationServer {} ]: This is not a MediaServer, wrong request", "✗".red(), self.id);
             }
