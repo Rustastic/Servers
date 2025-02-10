@@ -3,7 +3,7 @@ Rust is a programming language that combines speed and safety like few others.
 Thanks to its ownership system, you can forget about memory-related bugs
 and focus solely on your project's logic!
 
-<img media_id="media2">
+<img media_id="media2.jpg">
 
 If you want to harness this potential in something truly creative,
 try integrating Rust into a project like RustasticDrone:

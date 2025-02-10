@@ -3,13 +3,13 @@ Rubber ducks might seem trivial, but they hold a special place in every programm
 Explaining your code (or bugs) out loud to a silent duck can work miracles,
 helping you clarify your thoughts and find hidden mistakes.
 
-<img media_id="media3">
+<img media_id="media3.jpg">
 
 Why does it matter? Because sometimes the simplest solution is just an “outside perspective,”
 even if it’s a small plastic duck. Rubber duck debugging is about walking through your logic step by step,
 revealing insights you might otherwise miss.
 
-<img media_id="media4">
+<img media_id="media4.jpg">
 
 Apply the same principle to RustasticDrone’s logs:
 examine every line as if you’re explaining it to a duck, and watch how quickly
