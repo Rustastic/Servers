@@ -1,21 +1,30 @@
-use std::io::Cursor;
+use crate::servers::communication_server::CommunicationServer;
+use crate::servers::content_server::ContentServer;
+use base64::{engine::general_purpose, Engine as _};
 use colored::Colorize;
 use image::ImageReader;
 use log::{error, info};
-use messages::high_level_messages::{ClientMessage, Message, ServerMessage};
 use messages::high_level_messages::MessageContent::{FromClient, FromServer};
-use messages::high_level_messages::ServerMessage::{ServerType};
-use wg_2024::network::{NodeId};
-use crate::servers::communication_server::CommunicationServer;
-use crate::servers::content_server::ContentServer;
-use base64::{Engine as _, engine::{general_purpose}};
-
+use messages::high_level_messages::ServerMessage::ServerType;
+use messages::high_level_messages::{ClientMessage, Message, ServerMessage};
+use std::io::Cursor;
+use wg_2024::network::NodeId;
 
 impl CommunicationServer {
+    #[allow(clippy::too_many_lines)]
     pub fn handle_message(&mut self, message: Message) {
-        info!("{}, CommunicationServer {}, Recived a packet {:?}", "✔".green(), self.id, message);
+        info!(
+            "{}, CommunicationServer {}, Recived a packet {:?}",
+            "✔".green(),
+            self.id,
+            message
+        );
         let FromClient(content) = message.content else {
-            error!("{} [ CommunicationServer {} ]: Received message is not from a client.", "✗".red(), self.id);
+            error!(
+                "{} [ CommunicationServer {} ]: Received message is not from a client.",
+                "✗".red(),
+                self.id
+            );
             return;
         };
 
@@ -28,45 +37,97 @@ impl CommunicationServer {
             ClientMessage::RegisterToChat => {
                 // Handle client registration to chat
                 if self.registered_clients.contains(&message.source_id) {
-                    error!("{} [ CommunicationServer {} ]: Client {} already registered to chat", "✗".red(), self.id, message.source_id);
+                    error!(
+                        "{} [ CommunicationServer {} ]: Client {} already registered to chat",
+                        "✗".red(),
+                        self.id,
+                        message.source_id
+                    );
                 } else {
                     self.registered_clients.push(message.source_id);
-                    self.send_message_to_client(&ServerMessage::SuccessfulRegistration, message.source_id);
-                    info!("{}, CommunicationServer {}, Client {} registered to chat", "✔".green(), self.id, message.source_id);
+                    self.send_message_to_client(
+                        &ServerMessage::SuccessfulRegistration,
+                        message.source_id,
+                    );
+                    info!(
+                        "{}, CommunicationServer {}, Client {} registered to chat",
+                        "✔".green(),
+                        self.id,
+                        message.source_id
+                    );
                 }
             }
 
             ClientMessage::Logout => {
                 // Handle client logout
-                if let Some(index) = self.registered_clients.iter().position(|&id| id == message.source_id) {
+                if let Some(index) = self
+                    .registered_clients
+                    .iter()
+                    .position(|&id| id == message.source_id)
+                {
                     self.registered_clients.remove(index);
-                    self.send_message_to_client(&ServerMessage::SuccessfullLogOut, message.source_id);
-                    info!("{}, CommunicationServer {}, Client {} logged out", "✔".green(), self.id, message.source_id);
+                    self.send_message_to_client(
+                        &ServerMessage::SuccessfullLogOut,
+                        message.source_id,
+                    );
+                    info!(
+                        "{}, CommunicationServer {}, Client {} logged out",
+                        "✔".green(),
+                        self.id,
+                        message.source_id
+                    );
                 } else {
-                    error!("{} [ CommunicationServer {} ]: Client {} not registered to chat", "✗".red(), self.id, message.source_id);
+                    error!(
+                        "{} [ CommunicationServer {} ]: Client {} not registered to chat",
+                        "✗".red(),
+                        self.id,
+                        message.source_id
+                    );
                 }
             }
             ClientMessage::GetClientList => {
                 // Retrieve and send the list of clients to the requester
                 let client_list = self.registered_clients.clone();
-                self.send_message_to_client(&ServerMessage::ClientList(client_list), message.source_id);
+                self.send_message_to_client(
+                    &ServerMessage::ClientList(client_list),
+                    message.source_id,
+                );
             }
-            ClientMessage::SendMessage { recipient_id, content } => {
+            ClientMessage::SendMessage {
+                recipient_id,
+                content,
+            } => {
                 // Send message to the recipient
-                if self.registered_clients.contains(&recipient_id) && self.registered_clients.contains(&message.source_id) {
+                if self.registered_clients.contains(&recipient_id)
+                    && self.registered_clients.contains(&message.source_id)
+                {
                     let server_message = ServerMessage::MessageReceived {
                         sender_id: message.source_id,
                         content,
                     };
                     self.send_message_to_client(&server_message, recipient_id);
                 } else {
-                    self.send_message_to_client(&ServerMessage::UnreachableClient(message.source_id), recipient_id);
-                    error!("{} [ CommunicationServer {} ]: Client {} is not registered to chat", "✗".red(), self.id, recipient_id);
+                    self.send_message_to_client(
+                        &ServerMessage::UnreachableClient(message.source_id),
+                        recipient_id,
+                    );
+                    error!(
+                        "{} [ CommunicationServer {} ]: Client {} is not registered to chat",
+                        "✗".red(),
+                        self.id,
+                        recipient_id
+                    );
                 }
             }
 
-            ClientMessage::GetFilesList | ClientMessage::GetFile(_) | ClientMessage::GetMedia(_) => {
-                error!("{} [ CommunicationServer {} ]: This is not a MediaServer, wrong request", "✗".red(), self.id);
+            ClientMessage::GetFilesList
+            | ClientMessage::GetFile(_)
+            | ClientMessage::GetMedia(_) => {
+                error!(
+                    "{} [ CommunicationServer {} ]: This is not a MediaServer, wrong request",
+                    "✗".red(),
+                    self.id
+                );
             }
         }
     }
@@ -77,7 +138,8 @@ impl CommunicationServer {
                 "{} [ Communication {} ]: Cannot send message, destination {} is unreachable",
                 "✗".red(),
                 self.id,
-                   destination_id );
+                destination_id
+            );
             return;
         };
         for fragment_packet in self.message_factory.get_message_from_message_content(
@@ -88,17 +150,23 @@ impl CommunicationServer {
             self.packet_cache.insert_packet(&fragment_packet);
             self.send_packet(fragment_packet, None);
         }
-        info!("Message sent to client {}: {:?}", destination_id, server_message);
+        info!(
+            "Message sent to client {}: {:?}",
+            destination_id, server_message
+        );
     }
 }
 
 impl ContentServer {
     pub fn handle_message(&mut self, message: Message) {
         let FromClient(content) = message.content else {
-            error!("{} [ CommunicationServer {} ]: Received message is not from a client.", "✗".red(), self.id);
+            error!(
+                "{} [ CommunicationServer {} ]: Received message is not from a client.",
+                "✗".red(),
+                self.id
+            );
             return;
         };
-
         match content {
             ClientMessage::GetServerType => {
                 // Retrieve and send server type to the client
@@ -108,51 +176,50 @@ impl ContentServer {
             }
             ClientMessage::GetFilesList => {
                 let files_list = self.file_list.keys().cloned().collect();
-                self.send_message_to_client(&ServerMessage::FilesList(files_list), message.source_id);
+                self.send_message_to_client(
+                    &ServerMessage::FilesList(files_list),
+                    message.source_id,
+                );
             }
             ClientMessage::GetMedia(file_name) => {
                 if let Some(file_path) = self.file_list.get(&file_name) {
                     match ImageReader::open(file_path) {
-                        Ok(file_content) => {
-                            let file_media_content = file_content.decode().unwrap();
-                            let mut buf = Vec::new();
-                            match file_media_content.write_to(&mut Cursor::new(&mut buf), image::ImageFormat::Jpeg) {
-                                Ok(_) => {
-                                    let base_64 = general_purpose::STANDARD.encode(&buf);
-                                    let server_message = ServerMessage::Media {
-                                        0: file_name.clone(),
-                                        1: base_64,
-                                    };
-                                    self.send_message_to_client(&server_message, message.source_id);
-                                }
-                                Err(e) => {
-                                    error!(
-                    "{} [ ContentServer {} ]: Failed to read file {}: {}",
-                    "✗".red(),
-                    self.id,
-                    file_name,
-                    e
-                );
+                        Ok(file_content) => match file_content.decode() {
+                            Ok(file_media_content) => {
+                                let mut buf = Vec::new();
+                                match file_media_content
+                                    .write_to(&mut Cursor::new(&mut buf), image::ImageFormat::Jpeg)
+                                {
+                                    Ok(..) => {
+                                        let base_64 = general_purpose::STANDARD.encode(&buf);
+                                        let server_message =
+                                            ServerMessage::Media(file_name.clone(), base_64);
+                                        self.send_message_to_client(
+                                            &server_message,
+                                            message.source_id,
+                                        );
+                                    }
+                                    Err(e) => {
+                                        error!(
+                                            "{} [ ContentServer {} ]: Failed to read file {}: {}",
+                                            "✗".red(),
+                                            self.id,
+                                            file_name,
+                                            e
+                                        );
+                                    }
                                 }
                             }
-                        }
-                        Err(e) => {
-                            error!(
-                    "{} [ ContentServer {} ]: Failed to read file {}: {}",
-                    "✗".red(),
-                    self.id,
-                    file_name,
-                    e
-                );
+                            Err(_) => {
+                                self.print_error(&file_name);
+                            }
+                        },
+                        Err(_e) => {
+                            self.print_error(&file_name);
                         }
                     }
                 } else {
-                    error!(
-            "{} [ ContentServer {} ]: File {} not found",
-            "✗".red(),
-            self.id,
-            file_name
-        );
+                    self.print_error(&file_name);
                 }
             }
 
@@ -168,33 +235,44 @@ impl ContentServer {
                             };
                             self.send_message_to_client(&server_message, message.source_id);
                         }
-                        Err(e) => {
-                            error!(
-                    "{} [ ContentServer {} ]: Failed to read file {}: {}",
-                    "✗".red(),
-                    self.id,
-                    file_name,
-                    e
-                );
+                        Err(_e) => {
+                            self.print_error(&file_name);
                         }
                     }
                 } else {
-                    error!(
-            "{} [ ContentServer {} ]: File {} not found",
+                    self.print_error(&file_name);
+                }
+            }
+
+            ClientMessage::RegisterToChat
+            | ClientMessage::Logout
+            | ClientMessage::GetClientList => {
+                error!(
+                    "{} [ CommunicationServer {} ]: This is not a ChatServer, wrong request",
+                    "✗".red(),
+                    self.id
+                );
+            }
+            ClientMessage::SendMessage {
+                recipient_id: _recipient_id,
+                content: _content,
+            } => {
+                error!(
+                    "{} [ CommunicationServer {} ]: This is not a ChatServer, wrong request",
+                    "✗".red(),
+                    self.id
+                );
+            }
+        }
+    }
+
+    fn print_error(&self, file_name: &str) {
+        error!(
+            "{} [ ContentServer {} ]: Failed to read file {}",
             "✗".red(),
             self.id,
             file_name
         );
-                }
-            }
-
-            ClientMessage::RegisterToChat | ClientMessage::Logout | ClientMessage::GetClientList => {
-                error!("{} [ CommunicationServer {} ]: This is not a ChatServer, wrong request", "✗".red(), self.id);
-            }
-            ClientMessage::SendMessage { recipient_id: _recipient_id, content: _content } => {
-                error!("{} [ CommunicationServer {} ]: This is not a ChatServer, wrong request", "✗".red(), self.id);
-            }
-        }
     }
 
     fn send_message_to_client(&mut self, server_message: &ServerMessage, destination_id: NodeId) {
@@ -203,7 +281,8 @@ impl ContentServer {
                 "{} [ Communication {} ]: Cannot send message, destination {} is unreachable",
                 "✗".red(),
                 self.id,
-                   destination_id );
+                destination_id
+            );
             return;
         };
         for fragment_packet in self.message_factory.get_message_from_message_content(
@@ -214,6 +293,9 @@ impl ContentServer {
             self.packet_cache.insert_packet(&fragment_packet);
             self.send_packet(fragment_packet, None);
         }
-        info!("Message sent to client {}: {:?}", destination_id, server_message);
+        info!(
+            "Message sent to client {}: {:?}",
+            destination_id, server_message
+        );
     }
 }

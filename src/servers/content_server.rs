@@ -1,16 +1,16 @@
-use std::collections::HashMap;
-use std::thread;
 use assembler::HighLevelMessageFactory;
 use crossbeam_channel::{select_biased, Receiver, Sender};
+use std::collections::HashMap;
+use std::thread;
 use wg_2024::network::NodeId;
 use wg_2024::packet::{NodeType, Packet};
 
 use messages;
 use messages::high_level_messages::ServerType;
-use messages::high_level_messages::ServerType::{Text};
+use messages::high_level_messages::ServerType::Text;
 use messages::server_commands::{ContentServerCommand, ContentServerEvent};
-use source_routing::Router;
 use packet_cache::PacketCache;
+use source_routing::Router;
 
 pub struct ContentServer {
     pub id: NodeId,
@@ -21,18 +21,20 @@ pub struct ContentServer {
     pub packet_send: HashMap<NodeId, Sender<Packet>>,
     pub controller_send: Sender<ContentServerEvent>,
     pub controller_recv: Receiver<ContentServerCommand>,
-    pub server_type: ServerType, //text or media
+    pub server_type: ServerType,            //text or media
     pub file_list: HashMap<String, String>, //file name and file path
 }
 
 impl ContentServer {
     #[must_use]
-    pub fn new(id: NodeId,
-               packet_recv: Receiver<Packet>,
-               packet_send: HashMap<NodeId, Sender<Packet>>,
-               controller_send: Sender<ContentServerEvent>,
-               controller_recv: Receiver<ContentServerCommand>,
-               server_type: ServerType) -> Self {
+    pub fn new(
+        id: NodeId,
+        packet_recv: Receiver<Packet>,
+        packet_send: HashMap<NodeId, Sender<Packet>>,
+        controller_send: Sender<ContentServerEvent>,
+        controller_recv: Receiver<ContentServerCommand>,
+        server_type: ServerType,
+    ) -> Self {
         let mut hm = HashMap::new();
         match server_type {
             //inizialize the hashmap
@@ -97,5 +99,3 @@ impl ContentServer {
         thread::sleep(std::time::Duration::from_millis(10));
     }
 }
-
-

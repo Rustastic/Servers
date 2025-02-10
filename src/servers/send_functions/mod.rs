@@ -1,11 +1,11 @@
+use crate::servers::communication_server::CommunicationServer;
+use crate::servers::content_server::ContentServer;
 use colored::Colorize;
 use crossbeam_channel::Sender;
 use log::{error, info};
 use messages::server_commands::{CommunicationServerEvent, ContentServerEvent};
 use wg_2024::network::NodeId;
 use wg_2024::packet::Packet;
-use crate::servers::communication_server::CommunicationServer;
-use crate::servers::content_server::ContentServer;
 
 impl CommunicationServer {
     pub fn send_packet(&self, msg: Packet, sender: Option<&Sender<Packet>>) {
@@ -38,7 +38,11 @@ impl CommunicationServer {
     }
 
     pub fn send_to_sender(&self, msg: Packet, sender: &Sender<Packet>) {
-        info!("{} [CommunicationServer {}] sending packet", "✓".green(), self.id);
+        info!(
+            "{} [CommunicationServer {}] sending packet",
+            "✓".green(),
+            self.id
+        );
         sender
             .send(msg)
             .inspect_err(|e| {
@@ -67,13 +71,20 @@ impl CommunicationServer {
     }
 
     fn send_or_shortcut(&self, msg: Packet) {
-        info!("{} [CommunicationServer {}] sending packet {:?}", "✓".green(), self.id, msg);
+        info!(
+            "{} [CommunicationServer {}] sending packet {:?}",
+            "✓".green(),
+            self.id,
+            msg
+        );
         match self.get_sender(&msg) {
             Some(sender) => {
                 sender
                     .send(msg)
                     .inspect_err(|e| {
-                        self.send_controller(CommunicationServerEvent::ControllerShortcut(e.0.clone()));
+                        self.send_controller(CommunicationServerEvent::ControllerShortcut(
+                            e.0.clone(),
+                        ));
                     })
                     .ok();
             }
@@ -83,7 +94,12 @@ impl CommunicationServer {
     fn get_sender(&self, packet: &Packet) -> Option<Sender<Packet>> {
         Some(
             self.packet_send
-                .get(packet.routing_header.hops.get(packet.routing_header.hop_index)?)?
+                .get(
+                    packet
+                        .routing_header
+                        .hops
+                        .get(packet.routing_header.hop_index)?,
+                )?
                 .clone(),
         )
     }
@@ -171,7 +187,12 @@ impl ContentServer {
     fn get_sender(&self, packet: &Packet) -> Option<Sender<Packet>> {
         Some(
             self.packet_send
-                .get(packet.routing_header.hops.get(packet.routing_header.hop_index)?)?
+                .get(
+                    packet
+                        .routing_header
+                        .hops
+                        .get(packet.routing_header.hop_index)?,
+                )?
                 .clone(),
         )
     }

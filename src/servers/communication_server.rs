@@ -1,7 +1,7 @@
-use std::collections::HashMap;
-use std::thread;
 use assembler::HighLevelMessageFactory;
 use crossbeam_channel::{select_biased, Receiver, Sender};
+use std::collections::HashMap;
+use std::thread;
 use wg_2024::network::NodeId;
 use wg_2024::packet::{NodeType, Packet};
 
@@ -9,8 +9,8 @@ use messages;
 use messages::high_level_messages::ServerType;
 use messages::high_level_messages::ServerType::Chat;
 use messages::server_commands::{CommunicationServerCommand, CommunicationServerEvent};
-use source_routing::Router;
 use packet_cache::PacketCache;
+use source_routing::Router;
 
 pub struct CommunicationServer {
     pub id: NodeId,
@@ -27,7 +27,13 @@ pub struct CommunicationServer {
 
 impl CommunicationServer {
     #[must_use]
-    pub fn new(id: NodeId, packet_recv: Receiver<Packet>, packet_send: HashMap<NodeId, Sender<Packet>>, controller_send: Sender<CommunicationServerEvent>, controller_recv: Receiver<CommunicationServerCommand>) -> Self {
+    pub fn new(
+        id: NodeId,
+        packet_recv: Receiver<Packet>,
+        packet_send: HashMap<NodeId, Sender<Packet>>,
+        controller_send: Sender<CommunicationServerEvent>,
+        controller_recv: Receiver<CommunicationServerCommand>,
+    ) -> Self {
         Self {
             id,
             router: Router::new(id, NodeType::Server),
@@ -71,5 +77,3 @@ impl CommunicationServer {
         thread::sleep(std::time::Duration::from_millis(10));
     }
 }
-
-
