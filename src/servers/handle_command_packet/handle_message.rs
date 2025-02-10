@@ -1,3 +1,4 @@
+use std::io::Cursor;
 use colored::Colorize;
 use image::ImageReader;
 use log::{error, info};
@@ -7,6 +8,8 @@ use messages::high_level_messages::ServerMessage::{ServerType};
 use wg_2024::network::{NodeId};
 use crate::servers::communication_server::CommunicationServer;
 use crate::servers::content_server::ContentServer;
+use base64::{Engine as _, engine::{general_purpose}};
+
 
 impl CommunicationServer {
     pub fn handle_message(&mut self, message: Message) {
@@ -108,15 +111,30 @@ impl ContentServer {
                 self.send_message_to_client(&ServerMessage::FilesList(files_list), message.source_id);
             }
             ClientMessage::GetMedia(file_name) => {
-
                 if let Some(file_path) = self.file_list.get(&file_name) {
                     match ImageReader::open(file_path) {
                         Ok(file_content) => {
-                            let server_message = ServerMessage::Media {
-                                0: file_name.clone(),
-                                1: file_content.decode().unwrap().into_bytes(),
-                            };
-                            self.send_message_to_client(&server_message, message.source_id);
+                            let file_media_content = file_content.decode().unwrap();
+                            let mut buf = Vec::new();
+                            match file_media_content.write_to(&mut Cursor::new(&mut buf), image::ImageFormat::Jpeg) {
+                                Ok(_) => {
+                                    let base_64 = general_purpose::STANDARD.encode(&buf);
+                                    let server_message = ServerMessage::Media {
+                                        0: file_name.clone(),
+                                        1: base_64,
+                                    };
+                                    self.send_message_to_client(&server_message, message.source_id);
+                                }
+                                Err(e) => {
+                                    error!(
+                    "{} [ ContentServer {} ]: Failed to read file {}: {}",
+                    "✗".red(),
+                    self.id,
+                    file_name,
+                    e
+                );
+                                }
+                            }
                         }
                         Err(e) => {
                             error!(
