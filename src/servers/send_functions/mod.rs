@@ -12,7 +12,10 @@ impl CommunicationServer {
         match msg.pack_type {
             wg_2024::packet::PacketType::Ack(_)
             | wg_2024::packet::PacketType::Nack(_)
-            | wg_2024::packet::PacketType::FloodResponse(_) => self.send_or_shortcut(msg),
+            | wg_2024::packet::PacketType::FloodResponse(_) => {
+                info!("{} [CommunicationServer {}] sending flood response {:?}", "✓".green(), self.id, msg);
+                self.send_or_shortcut(msg)
+            },
             wg_2024::packet::PacketType::FloodRequest(_) => {
                 let Some(sender) = sender else { return };
                 self.send_to_sender(msg, sender);
