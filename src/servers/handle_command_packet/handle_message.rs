@@ -189,8 +189,7 @@ impl ContentServer {
                         Ok(dir) => {
                             let file_path = dir
                                 .join("src")
-                                .join("servers")
-                                .join("media_files")
+                                .join("data_files")
                                 .join(file_path_t);
                             match ImageReader::open(file_path) {
                                 Ok(file_content) => match file_content.decode() {
@@ -242,12 +241,10 @@ impl ContentServer {
             }
             ClientMessage::GetFile(file_name) => {
                 if let Some(file_path_t) = self.file_list.get(&file_name) {
-                    
                     match std::env::current_dir() {
                         Ok(dir) => {
                             let file_path = dir
                                 .join("src")
-                                .join("servers")
                                 .join("text_files")
                                 .join(file_path_t);
                             info!("reading file: {:?}",dir.display());
