@@ -20,14 +20,14 @@ impl CommunicationServer {
             wg_2024::packet::PacketType::MsgFragment(_) => {
                 let Some(dest) = msg.routing_header.current_hop() else {
                     error!(
-                        "{} [MediaClienet {}] error taking next_hop",
+                        "{} [CommunicationServer {}] error taking next_hop",
                         "✗".red(),
                         self.id
                     );
                     return;
                 };
                 info!(
-                    "{} [MediaClient {}] sending packet to neighbour {}",
+                    "{} [CommunicationServer {}] sending packet to neighbour {}",
                     "✓".green(),
                     self.id,
                     dest
@@ -61,7 +61,7 @@ impl CommunicationServer {
     fn send_to_neighbour_id(&self, msg: Packet, neighbour_id: NodeId) {
         let Some(sender) = self.packet_send.get(&neighbour_id) else {
             error!(
-                "{} [ CommunicationServer {} ]: Cannot send message, destination {neighbour_id} is unreachable",
+                "{} [CommunicationServer {} ]: Cannot send message, destination {neighbour_id} is unreachable",
                 "✗".red(),
                 self.id,
             );
@@ -129,7 +129,7 @@ impl ContentServer {
                 self.send_to_sender(msg, sender);
             }
             wg_2024::packet::PacketType::MsgFragment(_) => {
-                let Some(dest) = msg.routing_header.next_hop() else {
+                let Some(dest) = msg.routing_header.current_hop() else {
                     error!(
                         "{} [ContentServer {}] error taking next_hop",
                         "✗".red(),
@@ -137,6 +137,12 @@ impl ContentServer {
                     );
                     return;
                 };
+                info!(
+                    "{} [ContentServer {}] sending packet to neighbour {}",
+                    "✓".green(),
+                    self.id,
+                    dest
+                );
                 self.send_to_neighbour_id(msg, dest);
             }
         }

@@ -158,6 +158,7 @@ impl CommunicationServer {
 }
 
 impl ContentServer {
+    #[allow(clippy::too_many_lines)]
     pub fn handle_message(&mut self, message: Message) {
         let FromClient(content) = message.content else {
             error!(
@@ -222,7 +223,6 @@ impl ContentServer {
                     self.print_error(&file_name);
                 }
             }
-
             ClientMessage::GetFile(file_name) => {
                 if let Some(file_path) = self.file_list.get(&file_name) {
                     match std::fs::read_to_string(file_path) {
@@ -243,7 +243,6 @@ impl ContentServer {
                     self.print_error(&file_name);
                 }
             }
-
             ClientMessage::RegisterToChat
             | ClientMessage::Logout
             | ClientMessage::GetClientList => {
@@ -278,7 +277,7 @@ impl ContentServer {
     fn send_message_to_client(&mut self, server_message: &ServerMessage, destination_id: NodeId) {
         let Ok(header) = self.router.get_source_routing_header(destination_id) else {
             error!(
-                "{} [ Communication {} ]: Cannot send message, destination {} is unreachable",
+                "{} [ Content {} ]: Cannot send message, destination {} is unreachable",
                 "✗".red(),
                 self.id,
                 destination_id
