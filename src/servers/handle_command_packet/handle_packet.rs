@@ -175,7 +175,10 @@ impl CommunicationServer {
         path_trace.push((self.id, NodeType::Server));
         let mut hops = path_trace.iter().map(|(id, _)| *id).collect::<Vec<u8>>();
         hops.reverse();
-        hops.push(flood_request.initiator_id);
+        if hops.last().copied().unwrap() != flood_request.initiator_id {
+            hops.push(flood_request.initiator_id);
+        }
+        
 
         let flood_response = FloodResponse {
             flood_id: flood_request.flood_id,
@@ -357,7 +360,9 @@ impl ContentServer {
         path_trace.push((self.id, NodeType::Server));
         let mut hops = path_trace.iter().map(|(id, _)| *id).collect::<Vec<u8>>();
         hops.reverse();
-        hops.push(flood_request.initiator_id);
+        if hops.last().copied().unwrap() != flood_request.initiator_id {
+            hops.push(flood_request.initiator_id);
+        }
         let flood_response = FloodResponse {
             flood_id: flood_request.flood_id,
             path_trace,
