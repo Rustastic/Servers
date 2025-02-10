@@ -29,6 +29,7 @@ impl CommunicationServer {
                     error!("{} [ CommunicationServer {} ]: Client {} already registered to chat", "✗".red(), self.id, message.source_id);
                 } else {
                     self.registered_clients.push(message.source_id);
+                    self.send_message_to_client(&ServerMessage::SuccessfulRegistration, message.source_id);
                     info!("{}, CommunicationServer {}, Client {} registered to chat", "✔".green(), self.id, message.source_id);
                 }
             }
@@ -37,6 +38,7 @@ impl CommunicationServer {
                 // Handle client logout
                 if let Some(index) = self.registered_clients.iter().position(|&id| id == message.source_id) {
                     self.registered_clients.remove(index);
+                    self.send_message_to_client(&ServerMessage::SuccessfullLogOut, message.source_id);
                     info!("{}, CommunicationServer {}, Client {} logged out", "✔".green(), self.id, message.source_id);
                 } else {
                     error!("{} [ CommunicationServer {} ]: Client {} not registered to chat", "✗".red(), self.id, message.source_id);
