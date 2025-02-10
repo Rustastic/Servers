@@ -32,12 +32,12 @@ impl CommunicationServer {
     /// Handles the processing of a message fragment.
     fn process_message_fragment(&mut self, packet: &Packet, fragment: &Fragment) {
         if self.check_packet(packet, Some(fragment.fragment_index)) {
-            self.send_ack(fragment.fragment_index, packet);
             if let Some(message) = self.message_factory.received_fragment(fragment.clone(), packet.session_id, packet.routing_header.hops[0]) {
                 self.handle_message(message);
             }else{
                 error!("{} [CommunicationServer {}]: Error processing message fragment", "✗".red(), self.id);
             }
+            self.send_ack(fragment.fragment_index, packet);
         } else {
             let mut rev = packet.clone().routing_header.hops;
             rev.reverse();
