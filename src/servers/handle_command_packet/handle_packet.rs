@@ -137,7 +137,7 @@ impl CommunicationServer {
     /// Generates a response to a flood request.
     fn get_flood_response(&self, flood_request: FloodRequest, session_id: u64) -> Packet {
         let mut path_trace = flood_request.path_trace;
-        path_trace.push((self.id, NodeType::Client));
+        path_trace.push((flood_request.initiator_id, NodeType::Client));
         let mut hops = path_trace.iter().map(|(id, _)| *id).collect::<Vec<u8>>();
         hops.reverse();
         hops.push(flood_request.initiator_id);
@@ -293,7 +293,7 @@ impl ContentServer {
     /// Generates a response to a flood request.
     fn get_flood_response(&self, flood_request: FloodRequest, session_id: u64) -> Packet {
         let mut path_trace = flood_request.path_trace;
-        path_trace.push((self.id, NodeType::Client));
+        path_trace.push((flood_request.initiator_id, NodeType::Client));
         let mut hops = path_trace.iter().map(|(id, _)| *id).collect::<Vec<u8>>();
         hops.reverse();
         hops.push(flood_request.initiator_id);
