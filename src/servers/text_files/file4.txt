@@ -1,3 +1,4 @@
+<html>
 Rubber ducks might seem trivial, but they hold a special place in every programmer’s heart.
 Explaining your code (or bugs) out loud to a silent duck can work miracles,
 helping you clarify your thoughts and find hidden mistakes.
@@ -14,3 +15,5 @@ Apply the same principle to RustasticDrone’s logs:
 examine every line as if you’re explaining it to a duck, and watch how quickly
 you spot any missteps. Combine Rust’s safety guarantees with a friendly rubber duck,
 and you’ve got a debugging combo that’s downright quacktastic!
+
+</html>
