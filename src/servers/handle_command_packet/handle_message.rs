@@ -8,6 +8,7 @@ use messages::high_level_messages::MessageContent::{FromClient, FromServer};
 use messages::high_level_messages::ServerMessage::ServerType;
 use messages::high_level_messages::{ClientMessage, Message, ServerMessage};
 use std::io::Cursor;
+use std::path::PathBuf;
 use wg_2024::network::NodeId;
 
 impl CommunicationServer {
@@ -241,6 +242,7 @@ impl ContentServer {
             }
             ClientMessage::GetFile(file_name) => {
                 if let Some(file_path_t) = self.file_list.get(&file_name) {
+                    
                     match std::env::current_dir() {
                         Ok(dir) => {
                             let file_path = dir
@@ -248,6 +250,7 @@ impl ContentServer {
                                 .join("servers")
                                 .join("text_files")
                                 .join(file_path_t);
+                            info!("reading file: {:?}",dir.display());
                             match std::fs::read_to_string(file_path) {
                                 Ok(file_content) => {
                                     let file_size = file_content.len();
