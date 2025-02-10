@@ -35,6 +35,8 @@ impl CommunicationServer {
             self.send_ack(fragment.fragment_index, packet);
             if let Some(message) = self.message_factory.received_fragment(fragment.clone(), packet.session_id, packet.routing_header.hops[0]) {
                 self.handle_message(message);
+            }else{
+                error!("{} [CommunicationServer {}]: Error processing message fragment", "✗".red(), self.id);
             }
         } else {
             let mut rev = packet.clone().routing_header.hops;
