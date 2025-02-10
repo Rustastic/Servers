@@ -37,8 +37,10 @@ impl CommunicationServer {
                 self.handle_message(message);
             }
         } else {
+            let mut rev = packet.clone().routing_header.hops;
+            rev.reverse();
             let nack = Packet::new_nack(
-                packet.routing_header.get_reversed(),
+                SourceRoutingHeader::with_first_hop(rev),
                 packet.session_id,
                 Nack {
                     fragment_index: fragment.fragment_index,
@@ -155,8 +157,10 @@ impl CommunicationServer {
 
     /// Sends an acknowledgment packet back to the sender.
     fn send_ack(&self, fragment_index: u64, packet: &Packet) {
+        let mut rev = packet.clone().routing_header.hops;
+        rev.reverse();
         let ack_packet = Packet {
-            routing_header: packet.routing_header.get_reversed(),
+            routing_header: SourceRoutingHeader::with_first_hop(rev),
             session_id: packet.session_id,
             pack_type: wg_2024::packet::PacketType::Ack(Ack { fragment_index }),
         };
@@ -194,8 +198,10 @@ impl ContentServer {
                 self.handle_message(message);
             }
         } else {
+            let mut rev = packet.clone().routing_header.hops;
+            rev.reverse();
             let nack = Packet::new_nack(
-                packet.routing_header.get_reversed(),
+                SourceRoutingHeader::with_first_hop(rev),
                 packet.session_id,
                 Nack {
                     fragment_index: fragment.fragment_index,
@@ -311,8 +317,10 @@ impl ContentServer {
 
     /// Sends an acknowledgment packet back to the sender.
     fn send_ack(&self, fragment_index: u64, packet: &Packet) {
+        let mut rev = packet.clone().routing_header.hops;
+        rev.reverse();
         let ack_packet = Packet {
-            routing_header: packet.routing_header.get_reversed(),
+            routing_header: SourceRoutingHeader::with_first_hop(rev),
             session_id: packet.session_id,
             pack_type: wg_2024::packet::PacketType::Ack(Ack { fragment_index }),
         };
