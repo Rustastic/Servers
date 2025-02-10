@@ -19,8 +19,7 @@ impl CommunicationServer {
         match content {
             ClientMessage::GetServerType => {
                 // Retrieve and send server type to the client
-                let server_type = self.server_type;
-                let server_message = ServerType(server_type);
+                let server_message = ServerType(self.server_type);
                 self.send_message_to_client(&server_message, message.source_id);
             }
             ClientMessage::RegisterToChat => {
