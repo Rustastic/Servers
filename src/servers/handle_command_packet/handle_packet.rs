@@ -147,7 +147,7 @@ impl CommunicationServer {
             path_trace,
         };
         Packet {
-            routing_header: SourceRoutingHeader::initialize(hops),
+            routing_header: SourceRoutingHeader::with_first_hop(hops),
             session_id,
             pack_type: wg_2024::packet::PacketType::FloodResponse(flood_response),
         }
@@ -303,7 +303,7 @@ impl ContentServer {
             path_trace,
         };
         Packet {
-            routing_header: SourceRoutingHeader::initialize(hops),
+            routing_header: SourceRoutingHeader::with_first_hop(hops),
             session_id,
             pack_type: wg_2024::packet::PacketType::FloodResponse(flood_response),
         }
