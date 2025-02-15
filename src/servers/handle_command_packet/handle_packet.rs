@@ -178,7 +178,6 @@ impl CommunicationServer {
         if hops.last().copied().unwrap() != flood_request.initiator_id {
             hops.push(flood_request.initiator_id);
         }
-        
 
         let flood_response = FloodResponse {
             flood_id: flood_request.flood_id,

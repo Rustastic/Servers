@@ -187,10 +187,7 @@ impl ContentServer {
                 if let Some(file_path_t) = self.file_list.get(&file_name) {
                     match std::env::current_dir() {
                         Ok(dir) => {
-                            let file_path = dir
-                                .join("src")
-                                .join("data_files")
-                                .join(file_path_t);
+                            let file_path = dir.join("src").join("data_files").join(file_path_t);
                             match ImageReader::open(file_path) {
                                 Ok(file_content) => match file_content.decode() {
                                     Ok(file_media_content) => {
@@ -213,12 +210,19 @@ impl ContentServer {
                                             }
                                             Err(e) => {
                                                 error!(
-                                            "{} [ ContentServer {} ]: Failed to read file {}: {}",
-                                            "✗".red(),
-                                            self.id,
-                                            file_name,
-                                            e
-                                        );
+                                                    "{} [ ContentServer {} ]: Failed to read file {}: {}",
+                                                    "✗".red(),
+                                                    self.id,
+                                                    file_name,
+                                                    e
+                                                );
+                                                println!(
+                                                    "{} [ ContentServer {} ]: Failed to read file {}: {}",
+                                                    "✗".red(),
+                                                    self.id,
+                                                    file_name,
+                                                    e
+                                                );
                                             }
                                         }
                                     }
@@ -243,11 +247,8 @@ impl ContentServer {
                 if let Some(file_path_t) = self.file_list.get(&file_name) {
                     match std::env::current_dir() {
                         Ok(dir) => {
-                            let file_path = dir
-                                .join("src")
-                                .join("text_files")
-                                .join(file_path_t);
-                            info!("reading file: {:?}",dir.display());
+                            let file_path = dir.join("src").join("text_files").join(file_path_t);
+                            info!("reading file: {:?}", dir.display());
                             match std::fs::read_to_string(file_path) {
                                 Ok(file_content) => {
                                     let file_size = file_content.len();
@@ -292,6 +293,12 @@ impl ContentServer {
     }
 
     fn print_error(&self, file_name: &str) {
+        println!(
+            "{} [ ContentServer {} ]: Failed to read file {}",
+            "✗".red(),
+            self.id,
+            file_name
+        );
         error!(
             "{} [ ContentServer {} ]: Failed to read file {}",
             "✗".red(),
