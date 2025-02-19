@@ -184,6 +184,7 @@ impl ContentServer {
                 );
             }
             ClientMessage::GetMedia(file_name) => {
+                println!("[MediaServer {}] received GetMedia({file_name})", self.id) ;
                 if let Some(file_path_t) = self.file_list.get(&file_name) {
                     match std::env::current_dir() {
                         Ok(dir) => {
