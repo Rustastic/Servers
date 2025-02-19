@@ -7,8 +7,8 @@ use log::{error, info};
 use messages::high_level_messages::MessageContent::{FromClient, FromServer};
 use messages::high_level_messages::ServerMessage::ServerType;
 use messages::high_level_messages::{ClientMessage, Message, ServerMessage};
+use rand::Error;
 use std::io::Cursor;
-use std::path::PathBuf;
 use wg_2024::network::NodeId;
 
 impl CommunicationServer {
@@ -199,7 +199,7 @@ impl ContentServer {
                                             &mut Cursor::new(&mut buf),
                                             image::ImageFormat::Jpeg,
                                         ) {
-                                            Ok(..) => {
+                                            Ok(()) => {
                                                 let base_64 =
                                                     general_purpose::STANDARD.encode(&buf);
                                                 let server_message = ServerMessage::Media(
@@ -212,31 +212,25 @@ impl ContentServer {
                                                 );
                                             }
                                             Err(e) => {
-                                                error!(
-                                            "{} [ ContentServer {} ]: Failed to read file {}: {}",
-                                            "✗".red(),
-                                            self.id,
-                                            file_name,
-                                            e
-                                        );
+                                                self.print_error(&file_name, &Error::new(e));
                                             }
                                         }
                                     }
-                                    Err(_) => {
-                                        self.print_error(&file_name);
+                                    Err(e) => {
+                                        self.print_error(&file_name, &Error::new(e));
                                     }
                                 },
-                                Err(_e) => {
-                                    self.print_error(&file_name);
+                                Err(e) => {
+                                    self.print_error(&file_name, &Error::new(e));
                                 }
                             }
                         }
-                        Err(_e) => {
-                            self.print_error(&file_name);
+                        Err(e) => {
+                            self.print_error(&file_name, &Error::new(e));
                         }
                     }
                 } else {
-                    self.print_error(&file_name);
+                    // self.print_error(&file_name, Error{});
                 }
             }
             ClientMessage::GetFile(file_name) => {
@@ -258,15 +252,15 @@ impl ContentServer {
                                     };
                                     self.send_message_to_client(&server_message, message.source_id);
                                 }
-                                Err(_e) => {
-                                    self.print_error(&file_name);
+                                Err(e) => {
+                                    self.print_error(&file_name, &Error::new(e));
                                 }
                             }
                         }
                         Err(_e) => {}
                     }
                 } else {
-                    self.print_error(&file_name);
+                    // self.print_error(&file_name);
                 }
             }
             ClientMessage::RegisterToChat
@@ -291,7 +285,13 @@ impl ContentServer {
         }
     }
 
-    fn print_error(&self, file_name: &str) {
+    fn print_error(&self, file_name: &str, e: &Error) {
+        println!(
+            "{} [ ContentServer {} ]: Failed to read file {}, error: {e}",
+            "✗".red(),
+            self.id,
+            file_name
+        );
         error!(
             "{} [ ContentServer {} ]: Failed to read file {}",
             "✗".red(),
