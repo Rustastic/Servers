@@ -184,66 +184,34 @@ impl ContentServer {
                 );
             }
             ClientMessage::GetMedia(file_name) => {
-                println!("[MediaServer {}] received GetMedia({file_name})", self.id) ;
-                if let Some(file_path_t) = self.file_list.get(&file_name) {
-                    match std::env::current_dir() {
-                        Ok(dir) => {
-                            let file_path = dir
-                                .join("src")
-                                .join("data_files")
-                                .join(file_path_t);
-                            match ImageReader::open(file_path) {
-                                Ok(file_content) => match file_content.decode() {
-                                    Ok(file_media_content) => {
-                                        let mut buf = Vec::new();
-                                        match file_media_content.write_to(
-                                            &mut Cursor::new(&mut buf),
-                                            image::ImageFormat::Jpeg,
-                                        ) {
-                                            Ok(()) => {
-                                                let base_64 =
-                                                    general_purpose::STANDARD.encode(&buf);
-                                                let server_message = ServerMessage::Media(
-                                                    file_name.clone(),
-                                                    base_64,
-                                                );
-                                                self.send_message_to_client(
-                                                    &server_message,
-                                                    message.source_id,
-                                                );
-                                            }
-                                            Err(e) => {
-                                                self.print_error(&file_name, &Error::new(e));
-                                            }
-                                        }
-                                    }
-                                    Err(e) => {
-                                        self.print_error(&file_name, &Error::new(e));
-                                    }
-                                },
-                                Err(e) => {
-                                    self.print_error(&file_name, &Error::new(e));
-                                }
-                            }
-                        }
-                        Err(e) => {
-                            self.print_error(&file_name, &Error::new(e));
-                        }
-                    }
-                } else {
-                    // self.print_error(&file_name, Error{});
-                    println!("[MediaClient {}] error taking file position {file_name}", self.id);
+                println!("[MediaServer {}] received GetMedia({file_name})", self.id);
+                let file_path_t = self.file_list.get(&file_name).unwrap_or(&file_name);
+                let Ok(dir) = std::env::current_dir() else {
+                    return;
+                };
+                let file_path = dir.join("src").join("data_files").join(file_path_t);
+                let Ok(file_content) = ImageReader::open(file_path) else {
+                    return;
+                };
+                let Ok(file_media_content) = file_content.decode() else {
+                    return;
+                };
+                let mut buf = Vec::new();
+                if file_media_content
+                    .write_to(&mut Cursor::new(&mut buf), image::ImageFormat::Jpeg)
+                    .is_ok()
+                {
+                    let base_64 = general_purpose::STANDARD.encode(&buf);
+                    let server_message = ServerMessage::Media(file_name.clone(), base_64);
+                    self.send_message_to_client(&server_message, message.source_id);
                 }
             }
             ClientMessage::GetFile(file_name) => {
                 if let Some(file_path_t) = self.file_list.get(&file_name) {
                     match std::env::current_dir() {
                         Ok(dir) => {
-                            let file_path = dir
-                                .join("src")
-                                .join("text_files")
-                                .join(file_path_t);
-                            info!("reading file: {:?}",dir.display());
+                            let file_path = dir.join("src").join("text_files").join(file_path_t);
+                            info!("reading file: {:?}", dir.display());
                             match std::fs::read_to_string(file_path) {
                                 Ok(file_content) => {
                                     let file_size = file_content.len();
