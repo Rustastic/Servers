@@ -7,7 +7,6 @@ use log::{error, info};
 use messages::high_level_messages::MessageContent::{FromClient, FromServer};
 use messages::high_level_messages::ServerMessage::ServerType;
 use messages::high_level_messages::{ClientMessage, Message, ServerMessage};
-use rand::Error;
 use std::io::Cursor;
 use wg_2024::network::NodeId;
 
@@ -184,21 +183,31 @@ impl ContentServer {
                 );
             }
             ClientMessage::GetMedia(file_name) => {
-                println!("[MediaServer {}] received GetMedia({file_name})", self.id);
+                // println!("[MediaServer {}] received GetMedia({file_name})", self.id);
                 let file_path_t = self.file_list.get(&file_name).unwrap_or(&file_name);
-                let Ok(dir) = std::env::current_dir() else {
+                let Ok(dir) = std::env::current_dir()
+                    .inspect_err(|e| self.print_error(&file_name, &e.to_string()))
+                else {
                     return;
                 };
                 let file_path = dir.join("src").join("data_files").join(file_path_t);
-                let Ok(file_content) = ImageReader::open(file_path) else {
+                let Ok(file_content) = ImageReader::open(file_path)
+                    .inspect_err(|e| self.print_error(&file_name, &e.to_string()))
+                else {
                     return;
                 };
-                let Ok(file_media_content) = file_content.decode() else {
+                let Ok(file_media_content) = file_content
+                    .decode()
+                    .inspect_err(|e| {
+                        self.print_error(&file_name, &e.to_string()) ;
+                    })
+                else {
                     return;
                 };
                 let mut buf = Vec::new();
                 if file_media_content
                     .write_to(&mut Cursor::new(&mut buf), image::ImageFormat::Jpeg)
+                    .inspect_err(|e| self.print_error(&file_name, &e.to_string()))
                     .is_ok()
                 {
                     let base_64 = general_purpose::STANDARD.encode(&buf);
@@ -223,7 +232,7 @@ impl ContentServer {
                                     self.send_message_to_client(&server_message, message.source_id);
                                 }
                                 Err(e) => {
-                                    self.print_error(&file_name, &Error::new(e));
+                                    self.print_error(&file_name, &e.to_string());
                                 }
                             }
                         }
@@ -255,15 +264,15 @@ impl ContentServer {
         }
     }
 
-    fn print_error(&self, file_name: &str, e: &Error) {
-        println!(
-            "{} [ ContentServer {} ]: Failed to read file {}, error: {e}",
-            "✗".red(),
-            self.id,
-            file_name
-        );
+    fn print_error(&self, file_name: &str, e: &String) {
+        // println!(
+        //     "{} [ ContentServer {} ]: Failed to read file {}, error: {e}",
+        //     "✗".red(),
+        //     self.id,
+        //     file_name
+        // );
         error!(
-            "{} [ ContentServer {} ]: Failed to read file {}",
+            "{} [ ContentServer {} ]: Failed to read file {}, error: {e}",
             "✗".red(),
             self.id,
             file_name
