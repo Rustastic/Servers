@@ -232,6 +232,7 @@ impl ContentServer {
                     }
                 } else {
                     // self.print_error(&file_name, Error{});
+                    println!("[MediaClient {}] error taking file position {file_name}", self.id);
                 }
             }
             ClientMessage::GetFile(file_name) => {
