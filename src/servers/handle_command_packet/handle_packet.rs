@@ -303,31 +303,27 @@ impl ContentServer {
 
     /// Resends a packet after receiving a nack, adjusting routing if necessary.
     fn resend_for_nack(&mut self, session_id: u64, fragment_index: u64, nack_src: NodeId) {
-        if let Some((mut packet, freq)) = self.packet_cache.get_value((session_id, fragment_index))
-        {
-            if freq > 10 {
-                self.handle_high_frequency_nack(nack_src, &mut packet);
-            } else if freq > 5 {
-                self.flood_network();
-                let Some(destination) = packet.routing_header.destination() else {
-                    return;
-                };
-                let Ok(new_header) = self.router.get_source_routing_header(destination) else {
-                    self.send_controller(ContentServerEvent::UnreachableClient(destination));
-                    return;
-                };
-                let new_packet = Packet {
-                    routing_header: new_header,
-                    ..packet
-                };
-                packet = new_packet;
-            }
-            self.send_packet(packet, None);
-        } else {
-            self.send_controller(ContentServerEvent::ErrorPacketCache(
-                session_id,
-                fragment_index,
-            ));
+        let Some((packet, freq)) = self.packet_cache.get_value((session_id, fragment_index)) else {
+            println!("[Server {}] error extracting from cache ({session_id}, {fragment_index}) nack_src: {nack_src}", self.id);
+            self.send_controller(ContentServerEvent::ErrorPacketCache(session_id, fragment_index));
+            return;
+        };
+        self.router.dropped_fragment(nack_src);
+        let Some(destination) = packet.routing_header.destination() else {
+            return;
+        };
+        let Ok(new_header) = self.router.get_source_routing_header(destination) else {
+            self.send_controller(ContentServerEvent::UnreachableNode(destination));
+            return;
+        };
+        let new_packet = Packet {
+            routing_header: new_header,
+            ..packet
+        };
+        self.send_packet(new_packet, None);
+
+        if freq > 100 {
+            self.reinit_network();
         }
     }
 
