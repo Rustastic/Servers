@@ -136,15 +136,16 @@ impl CommunicationServer {
             self.send_controller(CommunicationServerEvent::UnreachableNode(destination));
             return;
         };
+        if freq > 100 {
+            self.reinit_network();
+        }
         let new_packet = Packet {
             routing_header: new_header,
             ..packet
         };
         self.send_packet(new_packet, None);
 
-        if freq > 100 {
-            self.reinit_network();
-        }
+        
     }
 
     /// Checks if the packet's routing is correct for this server.
