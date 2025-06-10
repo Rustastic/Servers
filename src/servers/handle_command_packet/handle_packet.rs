@@ -2,7 +2,6 @@ use crate::servers::communication_server::CommunicationServer;
 use crate::servers::content_server::ContentServer;
 use colored::Colorize;
 use log::error;
-use std::thread;
 use messages::server_commands::{CommunicationServerEvent, ContentServerEvent};
 use wg_2024::network::{NodeId, SourceRoutingHeader};
 use wg_2024::packet::{
@@ -12,11 +11,6 @@ use wg_2024::packet::{
 /// Implementation for the `CommunicationServer`, handling network packet operations.
 impl CommunicationServer {
     pub fn handle_packet(&mut self, packet: Packet) {
-        println!(
-            "[Server {}] Received packet header: {:?}",
-            self.id,
-            packet.routing_header
-        );
         match packet.pack_type {
             wg_2024::packet::PacketType::MsgFragment(ref fragment) => {
                 self.process_message_fragment(&packet, fragment);
@@ -26,7 +20,7 @@ impl CommunicationServer {
                     .take_packet((packet.session_id, ack.fragment_index));
             }
             wg_2024::packet::PacketType::Nack(nack) => {
-                self.handle_nack(&nack, packet.session_id);
+                self.handle_nack(&nack, packet.session_id, packet.routing_header.hops[0]);
             }
             wg_2024::packet::PacketType::FloodRequest(request) => {
                 let response = self.get_flood_response(request, packet.session_id);
@@ -70,7 +64,7 @@ impl CommunicationServer {
         }
     }
 
-    pub fn handle_nack(&mut self, nack: &Nack, session_id: u64) {
+    pub fn handle_nack(&mut self, nack: &Nack, session_id: u64, source_id: NodeId) {
         match nack.nack_type {
             NackType::ErrorInRouting(crashed_id) => {
                 error!(
@@ -104,7 +98,7 @@ impl CommunicationServer {
                     "✗".red(),
                     self.id
                 );
-                self.resend_for_nack(session_id, nack.fragment_index, self.id);
+                self.resend_for_nack(session_id, nack.fragment_index, source_id);
             }
         }
     }
@@ -203,7 +197,7 @@ impl ContentServer {
                     .take_packet((packet.session_id, ack.fragment_index));
             }
             wg_2024::packet::PacketType::Nack(nack) => {
-                self.handle_nack(&nack, packet.session_id);
+                self.handle_nack(&nack, packet.session_id, packet.routing_header.hops[0]);
             }
             wg_2024::packet::PacketType::FloodRequest(request) => {
                 let response = self.get_flood_response(request, packet.session_id);
@@ -241,7 +235,7 @@ impl ContentServer {
         }
     }
 
-    pub fn handle_nack(&mut self, nack: &Nack, session_id: u64) {
+    pub fn handle_nack(&mut self, nack: &Nack, session_id: u64, source_id: NodeId) {
         match nack.nack_type {
             NackType::ErrorInRouting(crashed_id) => {
                 error!(
@@ -271,7 +265,7 @@ impl ContentServer {
             }
             NackType::Dropped => {
                 error!("{} [ContentServer {}]: Packet dropped", "✗".red(), self.id);
-                self.resend_for_nack(session_id, nack.fragment_index, self.id);
+                self.resend_for_nack(session_id, nack.fragment_index, source_id);
             }
         }
     }
