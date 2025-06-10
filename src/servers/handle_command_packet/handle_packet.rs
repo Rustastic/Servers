@@ -12,6 +12,11 @@ use wg_2024::packet::{
 /// Implementation for the `CommunicationServer`, handling network packet operations.
 impl CommunicationServer {
     pub fn handle_packet(&mut self, packet: Packet) {
+        println!(
+            "[Server {}] Received packet header: {:?}",
+            self.id,
+            packet.routing_header
+        );
         match packet.pack_type {
             wg_2024::packet::PacketType::MsgFragment(ref fragment) => {
                 self.process_message_fragment(&packet, fragment);
@@ -107,7 +112,7 @@ impl CommunicationServer {
     /// Resends a packet after receiving a nack, adjusting routing if necessary.
     fn resend_for_nack(&mut self, session_id: u64, fragment_index: u64, nack_src: NodeId) {
         println!("[Server {}] Marked dropped {nack_src}", self.id);
-        let Some((packet, freq)) = self.packet_cache.get_value((session_id, fragment_index)) else {
+        let Some((packet, _)) = self.packet_cache.get_value((session_id, fragment_index)) else {
             println!("[Server {}] error extracting from cache ({session_id}, {fragment_index}) nack_src: {nack_src}", self.id);
             self.send_controller(CommunicationServerEvent::ErrorPacketCache(session_id, fragment_index));
             return;
@@ -274,7 +279,7 @@ impl ContentServer {
     /// Resends a packet after receiving a nack, adjusting routing if necessary.
     fn resend_for_nack(&mut self, session_id: u64, fragment_index: u64, nack_src: NodeId) {
         println!("[Server {}] Marked dropped {nack_src}", self.id);
-        let Some((packet, freq)) = self.packet_cache.get_value((session_id, fragment_index)) else {
+        let Some((packet, _)) = self.packet_cache.get_value((session_id, fragment_index)) else {
             println!("[Server {}] error extracting from cache ({session_id}, {fragment_index}) nack_src: {nack_src}", self.id);
             self.send_controller(ContentServerEvent::ErrorPacketCache(session_id, fragment_index));
             return;
