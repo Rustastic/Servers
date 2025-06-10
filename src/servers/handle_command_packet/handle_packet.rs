@@ -2,6 +2,7 @@ use crate::servers::communication_server::CommunicationServer;
 use crate::servers::content_server::ContentServer;
 use colored::Colorize;
 use log::error;
+use std::thread;
 use messages::server_commands::{CommunicationServerEvent, ContentServerEvent};
 use wg_2024::network::{NodeId, SourceRoutingHeader};
 use wg_2024::packet::{
@@ -121,6 +122,7 @@ impl CommunicationServer {
         
         if freq > 100 {
             self.reinit_network();
+            thread::sleep(std::time::Duration::from_secs(2));
         }
         let new_packet = Packet {
             routing_header: new_header,
@@ -284,6 +286,7 @@ impl ContentServer {
         };
         if freq > 100 {
             self.reinit_network();
+            thread::sleep(std::time::Duration::from_secs(2));
         }
         let new_packet = Packet {
             routing_header: new_header,
