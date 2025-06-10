@@ -106,6 +106,7 @@ impl CommunicationServer {
 
     /// Resends a packet after receiving a nack, adjusting routing if necessary.
     fn resend_for_nack(&mut self, session_id: u64, fragment_index: u64, nack_src: NodeId) {
+        println!("[Server {}] Marked dropped {nack_src}", self.id);
         let Some((packet, freq)) = self.packet_cache.get_value((session_id, fragment_index)) else {
             println!("[Server {}] error extracting from cache ({session_id}, {fragment_index}) nack_src: {nack_src}", self.id);
             self.send_controller(CommunicationServerEvent::ErrorPacketCache(session_id, fragment_index));
@@ -272,6 +273,7 @@ impl ContentServer {
 
     /// Resends a packet after receiving a nack, adjusting routing if necessary.
     fn resend_for_nack(&mut self, session_id: u64, fragment_index: u64, nack_src: NodeId) {
+        println!("[Server {}] Marked dropped {nack_src}", self.id);
         let Some((packet, freq)) = self.packet_cache.get_value((session_id, fragment_index)) else {
             println!("[Server {}] error extracting from cache ({session_id}, {fragment_index}) nack_src: {nack_src}", self.id);
             self.send_controller(ContentServerEvent::ErrorPacketCache(session_id, fragment_index));
@@ -295,8 +297,6 @@ impl ContentServer {
             ..packet
         };
         self.send_packet(new_packet, None);
-
-        
     }
 
     /// Checks if the packet's routing is correct for this server.
