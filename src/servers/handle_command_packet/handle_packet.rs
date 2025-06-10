@@ -103,24 +103,6 @@ impl CommunicationServer {
         }
     }
 
-    /// Specifically handles high-frequency nack situations indicating persistent issues.
-    fn handle_high_frequency_nack(&mut self, nack_src: NodeId, packet: &mut Packet) {
-        error!("High-frequency nack issue encountered, handling...");
-        // Potentially reinitialize network or adjust routing tables
-        self.router.drone_crashed(nack_src).unwrap_or_else(|_| {
-            self.reinit_network();
-        });
-
-        if let Some(destination) = packet.routing_header.destination() {
-            if let Ok(new_header) = self.router.get_source_routing_header(destination) {
-                packet.routing_header = new_header;
-                self.flood_network();
-            } else {
-                self.send_controller(CommunicationServerEvent::UnreachableClient(destination));
-            }
-        }
-    }
-
     /// Resends a packet after receiving a nack, adjusting routing if necessary.
     fn resend_for_nack(&mut self, session_id: u64, fragment_index: u64, nack_src: NodeId) {
         let Some((packet, freq)) = self.packet_cache.get_value((session_id, fragment_index)) else {
@@ -136,9 +118,10 @@ impl CommunicationServer {
             self.send_controller(CommunicationServerEvent::UnreachableNode(destination));
             return;
         };
-        if freq > 100 {
+        
+        /*if freq > 100 {
             self.reinit_network();
-        }
+        }*/
         let new_packet = Packet {
             routing_header: new_header,
             ..packet
@@ -284,24 +267,6 @@ impl ContentServer {
         }
     }
 
-    /// Specifically handles high-frequency nack situations indicating persistent issues.
-    fn handle_high_frequency_nack(&mut self, nack_src: NodeId, packet: &mut Packet) {
-        error!("High-frequency nack issue encountered, handling...");
-        // Potentially reinitialize network or adjust routing tables
-        self.router.drone_crashed(nack_src).unwrap_or_else(|_| {
-            self.reinit_network();
-        });
-
-        if let Some(destination) = packet.routing_header.destination() {
-            if let Ok(new_header) = self.router.get_source_routing_header(destination) {
-                packet.routing_header = new_header;
-                self.flood_network();
-            } else {
-                self.send_controller(ContentServerEvent::UnreachableClient(destination));
-            }
-        }
-    }
-
     /// Resends a packet after receiving a nack, adjusting routing if necessary.
     fn resend_for_nack(&mut self, session_id: u64, fragment_index: u64, nack_src: NodeId) {
         let Some((packet, freq)) = self.packet_cache.get_value((session_id, fragment_index)) else {
@@ -317,9 +282,9 @@ impl ContentServer {
             self.send_controller(ContentServerEvent::UnreachableNode(destination));
             return;
         };
-        if freq > 100 {
+        /*if freq > 100 {
             self.reinit_network();
-        }
+        }*/
         let new_packet = Packet {
             routing_header: new_header,
             ..packet
