@@ -9,7 +9,7 @@ impl CommunicationServer {
     /// Handles commands directed at the communication server.
     pub fn handle_command(&mut self, command: CommunicationServerCommand) {
         match command {
-            CommunicationServerCommand::InitFlooding => self.flood_network(),
+            CommunicationServerCommand::InitFlooding => self.reinit_network(),
             CommunicationServerCommand::LogNetwork => self.router.log_network(),
             CommunicationServerCommand::RemoveSender(id) => {
                 let _ = self.packet_send.remove(&id);
@@ -37,7 +37,7 @@ impl CommunicationServer {
 impl ContentServer {
     pub fn handle_command(&mut self, command: ContentServerCommand) {
         match command {
-            ContentServerCommand::InitFlooding => self.flood_network(),
+            ContentServerCommand::InitFlooding => self.reinit_network(),
             ContentServerCommand::RemoveSender(id) => {
                 let _ = self.packet_send.remove(&id);
             }
