@@ -120,10 +120,11 @@ impl CommunicationServer {
             return;
         };
         
+        /*
         if freq > 100 {
             self.reinit_network();
             thread::sleep(std::time::Duration::from_secs(2));
-        }
+        } */
         let new_packet = Packet {
             routing_header: new_header,
             ..packet
@@ -284,10 +285,11 @@ impl ContentServer {
             self.send_controller(ContentServerEvent::UnreachableNode(destination));
             return;
         };
+        /* 
         if freq > 100 {
             self.reinit_network();
             thread::sleep(std::time::Duration::from_secs(2));
-        }
+        } */
         let new_packet = Packet {
             routing_header: new_header,
             ..packet
