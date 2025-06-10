@@ -119,9 +119,9 @@ impl CommunicationServer {
             return;
         };
         
-        /*if freq > 100 {
+        if freq > 100 {
             self.reinit_network();
-        }*/
+        }
         let new_packet = Packet {
             routing_header: new_header,
             ..packet
@@ -282,9 +282,9 @@ impl ContentServer {
             self.send_controller(ContentServerEvent::UnreachableNode(destination));
             return;
         };
-        /*if freq > 100 {
+        if freq > 100 {
             self.reinit_network();
-        }*/
+        }
         let new_packet = Packet {
             routing_header: new_header,
             ..packet
