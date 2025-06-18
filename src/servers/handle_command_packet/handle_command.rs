@@ -13,7 +13,6 @@ impl CommunicationServer {
             CommunicationServerCommand::LogNetwork => self.router.log_network(),
             CommunicationServerCommand::RemoveSender(id) => {
                 let _ = self.packet_send.remove(&id);
-                self.reinit_network();
             }
             CommunicationServerCommand::AddSender(id, sender) => {
                 if let std::collections::hash_map::Entry::Vacant(e) = self.packet_send.entry(id) {
@@ -23,7 +22,6 @@ impl CommunicationServer {
                         "✔".green(),
                         self.id
                     );
-                    self.reinit_network();
                 } else {
                     warn!(
                         "{} [ CommunicationServer {} ] is already connected to [ Drone {id} ]",
@@ -42,7 +40,6 @@ impl ContentServer {
             ContentServerCommand::InitFlooding => self.reinit_network(),
             ContentServerCommand::RemoveSender(id) => {
                 let _ = self.packet_send.remove(&id);
-                self.reinit_network();
             }
             ContentServerCommand::AddSender(id, sender) => {
                 if let std::collections::hash_map::Entry::Vacant(e) = self.packet_send.entry(id) {
@@ -52,7 +49,6 @@ impl ContentServer {
                         "✔".green(),
                         self.id
                     );
-                    self.reinit_network();
                 } else {
                     warn!(
                         "{} [ ContentServer {} ] is already connected to [ Drone {id} ]",
