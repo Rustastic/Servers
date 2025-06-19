@@ -77,6 +77,7 @@ impl ContentServer {
                         "✔".green(),
                         self.id
                     );
+                    self.router.add_neighbour(id);
                 } else {
                     warn!(
                         "{} [ ContentServer {} ] is already connected to [ Drone {id} ]",
