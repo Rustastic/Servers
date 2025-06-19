@@ -54,7 +54,20 @@ impl ContentServer {
         match command {
             ContentServerCommand::InitFlooding => self.reinit_network(),
             ContentServerCommand::RemoveSender(id) => {
-                let _ = self.packet_send.remove(&id);
+                if self.packet_send.remove(&id).is_some() {
+                    info!(
+                        "{} [ CommunicationServer {} ]: Sender removed successfully.",
+                        "✔".green(),
+                        self.id
+                    );
+                } else {
+                    warn!(
+                        "{} [ CommunicationServer {} ]: Sender [ Drone {id} ] not found.",
+                        "!!!".yellow(),
+                        self.id
+                    );
+                }
+                self.router.remove_neighbour(id);
             }
             ContentServerCommand::AddSender(id, sender) => {
                 if let std::collections::hash_map::Entry::Vacant(e) = self.packet_send.entry(id) {
