@@ -9,7 +9,7 @@ impl CommunicationServer {
     /// Handles commands directed at the communication server.
     pub fn handle_command(&mut self, command: CommunicationServerCommand) {
         match command {
-            CommunicationServerCommand::InitFlooding => self.reinit_network(),
+            CommunicationServerCommand::InitFlooding => self.flood_network(),
             CommunicationServerCommand::LogNetwork => self.router.log_network(),
             CommunicationServerCommand::RemoveSender(id) => {
                 if self.packet_send.remove(&id).is_some() {
@@ -26,7 +26,7 @@ impl CommunicationServer {
                     );
                 }
                 self.router.remove_neighbour(id);
-
+                self.flood_network()
             }
             CommunicationServerCommand::AddSender(id, sender) => {
                 if let std::collections::hash_map::Entry::Vacant(e) = self.packet_send.entry(id) {
@@ -37,6 +37,7 @@ impl CommunicationServer {
                         self.id
                     );
                     self.router.add_neighbour(id);
+                    self.flood_network()
                 } else {
                     warn!(
                         "{} [ CommunicationServer {} ] is already connected to [ Drone {id} ]",
@@ -52,7 +53,7 @@ impl CommunicationServer {
 impl ContentServer {
     pub fn handle_command(&mut self, command: ContentServerCommand) {
         match command {
-            ContentServerCommand::InitFlooding => self.reinit_network(),
+            ContentServerCommand::InitFlooding => self.flood_network(),
             ContentServerCommand::RemoveSender(id) => {
                 if self.packet_send.remove(&id).is_some() {
                     info!(
@@ -68,6 +69,7 @@ impl ContentServer {
                     );
                 }
                 self.router.remove_neighbour(id);
+                self.flood_network()
             }
             ContentServerCommand::AddSender(id, sender) => {
                 if let std::collections::hash_map::Entry::Vacant(e) = self.packet_send.entry(id) {
@@ -78,6 +80,7 @@ impl ContentServer {
                         self.id
                     );
                     self.router.add_neighbour(id);
+                    self.flood_network()
                 } else {
                     warn!(
                         "{} [ ContentServer {} ] is already connected to [ Drone {id} ]",

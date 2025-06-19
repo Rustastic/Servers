@@ -65,10 +65,7 @@ impl CommunicationServer {
         }
     }
 
-    pub fn reinit_network(&mut self) {
-        self.flood_network();
-    }
-    fn flood_network(&mut self) {
+    pub fn flood_network(&mut self) {
         let requests = self.router.get_flood_requests(self.packet_send.len());
         for (sender, request) in self.packet_send.values().zip(requests) {
             self.send_packet(request, Some(sender));
