@@ -2,6 +2,7 @@ use assembler::HighLevelMessageFactory;
 use crossbeam_channel::{select_biased, Receiver, Sender};
 use std::collections::HashMap;
 use std::thread;
+use std:: time::Duration;
 use wg_2024::network::NodeId;
 use wg_2024::packet::{NodeType, Packet};
 
@@ -86,14 +87,13 @@ impl ContentServer {
     }
 
     pub fn reinit_network(&mut self) {
-        self.router.clear_routing_table();
         self.flood_network();
     }
-    pub fn flood_network(&self) {
-        for sender in self.packet_send.values() {
-            let req = self.router.get_flood_request();
-            self.send_packet(req, Some(sender));
+    pub fn flood_network(&mut self) {
+        let requests = self.router.get_flood_requests(self.packet_send.len());
+        for (sender, request) in self.packet_send.values().zip(requests) {
+            self.send_packet(request, Some(sender));
         }
-        thread::sleep(std::time::Duration::from_millis(10));
+        thread::sleep(Duration::from_secs(2));
     }
 }

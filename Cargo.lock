@@ -492,9 +492,9 @@ dependencies = [
 
 [[package]]
 name = "image-webp"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14d75c7014ddab93c232bc6bb9f64790d3dfd1d605199acd4b40b6d69e691e9f"
+checksum = "f6970fe7a5300b4b42e62c52efa0187540a5bef546c60edaf554ef595d2e6f0b"
 dependencies = [
  "byteorder-lite",
  "quick-error",
@@ -1101,7 +1101,7 @@ checksum = "67b1b7a3b5fe4f1376887184045fcf45c69e92af734b7aaddc05fb777b6fbd03"
 [[package]]
 name = "source_routing"
 version = "0.1.0"
-source = "git+https://github.com/Rustastic/source_routing.git#9747a832d2ef44a2bd624d6e361aa38984f644a1"
+source = "git+https://github.com/Rustastic/source_routing.git?branch=network_caching#b8232459d99bc87fff87bef39d2d9c1011d063ef"
 dependencies = [
  "colored",
  "crossbeam-channel",

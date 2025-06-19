@@ -106,7 +106,7 @@ impl CommunicationServer {
     /// Resends a packet after receiving a nack, adjusting routing if necessary.
     fn resend_for_nack(&mut self, session_id: u64, fragment_index: u64, nack_src: NodeId) {
         println!("[Server {}] Marked dropped {nack_src}", self.id);
-        let Some((packet, _)) = self.packet_cache.get_value((session_id, fragment_index)) else {
+        let Some((packet, freq)) = self.packet_cache.get_value((session_id, fragment_index)) else {
             println!("[Server {}] error extracting from cache ({session_id}, {fragment_index}) nack_src: {nack_src}", self.id);
             self.send_controller(CommunicationServerEvent::ErrorPacketCache(session_id, fragment_index));
             return;
@@ -120,17 +120,15 @@ impl CommunicationServer {
             return;
         };
         
-        /*
-        if freq > 100 {
-            self.reinit_network();
-            thread::sleep(std::time::Duration::from_secs(2));
-        } */
         let new_packet = Packet {
             routing_header: new_header,
             ..packet
         };
         self.send_packet(new_packet, None);
 
+        if freq > 100 {
+            self.reinit_network();
+        } 
         
     }
 
@@ -273,7 +271,7 @@ impl ContentServer {
     /// Resends a packet after receiving a nack, adjusting routing if necessary.
     fn resend_for_nack(&mut self, session_id: u64, fragment_index: u64, nack_src: NodeId) {
         println!("[Server {}] Marked dropped {nack_src}", self.id);
-        let Some((packet, _)) = self.packet_cache.get_value((session_id, fragment_index)) else {
+        let Some((packet, freq)) = self.packet_cache.get_value((session_id, fragment_index)) else {
             println!("[Server {}] error extracting from cache ({session_id}, {fragment_index}) nack_src: {nack_src}", self.id);
             self.send_controller(ContentServerEvent::ErrorPacketCache(session_id, fragment_index));
             return;
@@ -284,18 +282,17 @@ impl ContentServer {
         };
         let Ok(new_header) = self.router.get_source_routing_header(destination) else {
             self.send_controller(ContentServerEvent::UnreachableNode(destination));
+            self.send_packet(packet, None);
             return;
         };
-        /* 
-        if freq > 100 {
-            self.reinit_network();
-            thread::sleep(std::time::Duration::from_secs(2));
-        } */
         let new_packet = Packet {
             routing_header: new_header,
             ..packet
         };
         self.send_packet(new_packet, None);
+        if freq > 100 {
+            self.flood_network();
+        } 
     }
 
     /// Checks if the packet's routing is correct for this server.
