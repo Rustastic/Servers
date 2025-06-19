@@ -73,7 +73,7 @@ impl CommunicationServer {
                     self.id,
                     crashed_id
                 );
-                let _ = self.router.drone_crashed(crashed_id);
+                let () = self.router.drone_crashed(crashed_id);
                 self.resend_for_nack(session_id, nack.fragment_index, crashed_id);
             }
             NackType::DestinationIsDrone => {
@@ -108,7 +108,10 @@ impl CommunicationServer {
         println!("[Server {}] Marked dropped {nack_src}", self.id);
         let Some((packet, freq)) = self.packet_cache.get_value((session_id, fragment_index)) else {
             println!("[Server {}] error extracting from cache ({session_id}, {fragment_index}) nack_src: {nack_src}", self.id);
-            self.send_controller(CommunicationServerEvent::ErrorPacketCache(session_id, fragment_index));
+            self.send_controller(CommunicationServerEvent::ErrorPacketCache(
+                session_id,
+                fragment_index,
+            ));
             return;
         };
         self.router.dropped_fragment(nack_src);
@@ -119,7 +122,7 @@ impl CommunicationServer {
             self.send_controller(CommunicationServerEvent::UnreachableNode(destination));
             return;
         };
-        
+
         let new_packet = Packet {
             routing_header: new_header,
             ..packet
@@ -128,8 +131,7 @@ impl CommunicationServer {
 
         if freq > 100 {
             self.flood_network();
-        } 
-        
+        }
     }
 
     /// Checks if the packet's routing is correct for this server.
@@ -242,7 +244,7 @@ impl ContentServer {
                     self.id,
                     crashed_id
                 );
-                let _ = self.router.drone_crashed(crashed_id);
+                let () = self.router.drone_crashed(crashed_id);
                 self.resend_for_nack(session_id, nack.fragment_index, crashed_id);
             }
             NackType::DestinationIsDrone => {
@@ -273,7 +275,10 @@ impl ContentServer {
         println!("[Server {}] Marked dropped {nack_src}", self.id);
         let Some((packet, freq)) = self.packet_cache.get_value((session_id, fragment_index)) else {
             println!("[Server {}] error extracting from cache ({session_id}, {fragment_index}) nack_src: {nack_src}", self.id);
-            self.send_controller(ContentServerEvent::ErrorPacketCache(session_id, fragment_index));
+            self.send_controller(ContentServerEvent::ErrorPacketCache(
+                session_id,
+                fragment_index,
+            ));
             return;
         };
         self.router.dropped_fragment(nack_src);
@@ -292,7 +297,7 @@ impl ContentServer {
         self.send_packet(new_packet, None);
         if freq > 100 {
             self.flood_network();
-        } 
+        }
     }
 
     /// Checks if the packet's routing is correct for this server.

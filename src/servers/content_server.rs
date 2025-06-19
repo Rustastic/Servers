@@ -2,7 +2,7 @@ use assembler::HighLevelMessageFactory;
 use crossbeam_channel::{select_biased, Receiver, Sender};
 use std::collections::HashMap;
 use std::thread;
-use std:: time::Duration;
+use std::time::Duration;
 use wg_2024::network::NodeId;
 use wg_2024::packet::{NodeType, Packet};
 

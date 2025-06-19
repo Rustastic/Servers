@@ -150,10 +150,7 @@ impl CommunicationServer {
             self.packet_cache.insert_packet(&fragment_packet);
             self.send_packet(fragment_packet, None);
         }
-        info!(
-            "Message sent to client {}: {:?}",
-            destination_id, server_message
-        );
+        info!("Message sent to client {destination_id}: {server_message:?}");
     }
 }
 
@@ -196,12 +193,9 @@ impl ContentServer {
                 else {
                     return;
                 };
-                let Ok(file_media_content) = file_content
-                    .decode()
-                    .inspect_err(|e| {
-                        self.print_error(&file_name, &e.to_string()) ;
-                    })
-                else {
+                let Ok(file_media_content) = file_content.decode().inspect_err(|e| {
+                    self.print_error(&file_name, &e.to_string());
+                }) else {
                     return;
                 };
                 let mut buf = Vec::new();
@@ -297,9 +291,6 @@ impl ContentServer {
             self.packet_cache.insert_packet(&fragment_packet);
             self.send_packet(fragment_packet, None);
         }
-        info!(
-            "Message sent to client {}: {:?}",
-            destination_id, server_message
-        );
+        info!("Message sent to client {destination_id}: {server_message:?}");
     }
 }

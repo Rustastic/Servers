@@ -1,16 +1,16 @@
 use assembler::HighLevelMessageFactory;
 use crossbeam_channel::{select_biased, Receiver, Sender};
-use std::collections::HashMap;
-use std::thread;
-use wg_2024::network::NodeId;
-use wg_2024::packet::{NodeType, Packet};
-use std:: time::Duration;
 use messages;
 use messages::high_level_messages::ServerType;
 use messages::high_level_messages::ServerType::Chat;
 use messages::server_commands::{CommunicationServerCommand, CommunicationServerEvent};
 use packet_cache::PacketCache;
 use source_routing::Router;
+use std::collections::HashMap;
+use std::thread;
+use std::time::Duration;
+use wg_2024::network::NodeId;
+use wg_2024::packet::{NodeType, Packet};
 
 pub struct CommunicationServer {
     pub id: NodeId,
