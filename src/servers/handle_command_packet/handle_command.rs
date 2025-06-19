@@ -12,7 +12,21 @@ impl CommunicationServer {
             CommunicationServerCommand::InitFlooding => self.reinit_network(),
             CommunicationServerCommand::LogNetwork => self.router.log_network(),
             CommunicationServerCommand::RemoveSender(id) => {
-                let _ = self.packet_send.remove(&id);
+                if self.packet_send.remove(&id).is_some() {
+                    info!(
+                        "{} [ CommunicationServer {} ]: Sender removed successfully.",
+                        "✔".green(),
+                        self.id
+                    );
+                } else {
+                    warn!(
+                        "{} [ CommunicationServer {} ]: Sender [ Drone {id} ] not found.",
+                        "!!!".yellow(),
+                        self.id
+                    );
+                }
+                self.router.remove_neighbour(id);
+
             }
             CommunicationServerCommand::AddSender(id, sender) => {
                 if let std::collections::hash_map::Entry::Vacant(e) = self.packet_send.entry(id) {
@@ -22,6 +36,7 @@ impl CommunicationServer {
                         "✔".green(),
                         self.id
                     );
+                    self.router.add_neighbour(id);
                 } else {
                     warn!(
                         "{} [ CommunicationServer {} ] is already connected to [ Drone {id} ]",
